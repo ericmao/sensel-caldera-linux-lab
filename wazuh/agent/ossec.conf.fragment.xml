@@ -1,0 +1,13 @@
+<!--
+  Merge into /var/ossec/etc/ossec.conf under <ossec_config>.
+  Phase 2: applied by install-wazuh-agent.sh
+-->
+<localfile>
+  <log_format>json</log_format>
+  <location>/var/log/sensel-training/caldera-events.json</location>
+</localfile>
+
+<syscheck>
+  <directories check_all="yes">/tmp/sensel-training-staging</directories>
+  <disabled>no</disabled>
+</syscheck>

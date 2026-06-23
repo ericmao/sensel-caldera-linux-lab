@@ -1,0 +1,17 @@
+---
+description: Safety and scope rules for sensel-caldera-linux-lab
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# SenseL Caldera Linux Lab Rules
+
+- Only act on localhost Docker resources for this repository.
+- Never target public IPs, host network, Docker socket, Proxmox, SOC admin services, databases, or Tailscale admin.
+- Do not add credential dumping, persistence, privilege escalation, lateral movement, exploitation, reverse shells, payload downloads, ransomware behavior, or external exfiltration.
+- Do not use privileged containers.
+- All exercises must write structured JSON markers.
+- All exercises must have cleanup.
+- Before modifying Caldera deployment logic, inspect the checked-out Caldera version and do not invent endpoints.
+- Keep secrets only in `.env`, never commit them.

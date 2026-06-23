@@ -1,0 +1,49 @@
+{
+  "operation": {
+    "id": "op-demo-001",
+    "name": "SEN-APT29-LNX-01",
+    "group": "castle-train-01",
+    "start": "2026-06-22T09:59:00Z",
+    "finish": "2026-06-22T10:05:00Z",
+    "host_group": {
+      "caldera-linux-target-01": {
+        "paw": "demo-paw-01",
+        "platform": "linux"
+      }
+    }
+  },
+  "chain": [
+    {
+      "ability_id": "a1b2c3d4-e001-4001-8001-000000000001",
+      "ability_name": "SEN-LNX-001 Local Account Discovery",
+      "paw": "demo-paw-01",
+      "command": "getent passwd",
+      "finish": "2026-06-22T10:00:05Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e002-4002-8002-000000000002",
+      "ability_name": "SEN-LNX-002 Network Configuration Discovery",
+      "paw": "demo-paw-01",
+      "command": "ip addr",
+      "finish": "2026-06-22T10:01:35Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e003-4003-8003-000000000003",
+      "ability_name": "SEN-LNX-003 Process Discovery",
+      "paw": "demo-paw-01",
+      "command": "ps",
+      "finish": "2026-06-22T10:02:50Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e004-4004-8004-000000000004",
+      "ability_name": "SEN-LNX-004 Synthetic Data Staging",
+      "paw": "demo-paw-01",
+      "command": "cp synthetic data",
+      "finish": "2026-06-22T10:04:10Z",
+      "status": 0
+    }
+  ]
+}

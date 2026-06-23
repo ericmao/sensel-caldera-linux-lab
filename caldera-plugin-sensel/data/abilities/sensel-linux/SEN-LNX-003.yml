@@ -1,0 +1,14 @@
+- id: a1b2c3d4-e003-4003-8003-000000000003
+  name: SEN-LNX-003 Process Discovery
+  description: Read-only process listing without modification
+  tactic: discovery
+  technique:
+    attack_id: T1057
+    name: Process Discovery
+  platforms:
+    linux:
+      sh:
+        command: |
+          OUT="/tmp/sensel-discovery-003.txt"
+          ps -eo pid,ppid,user,cmd --no-headers > "${OUT}"
+          python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-003 --technique-id T1057 --result success --artifact-path "${OUT}"

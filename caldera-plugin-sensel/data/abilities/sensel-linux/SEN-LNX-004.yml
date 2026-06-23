@@ -1,0 +1,31 @@
+- id: a1b2c3d4-e004-4004-8004-000000000004
+  name: SEN-LNX-004 Synthetic Data Staging
+  description: Stage synthetic demo files locally with manifest and checksums
+  tactic: collection
+  technique:
+    attack_id: T1074.001
+    name: Local Data Staging
+  platforms:
+    linux:
+      sh:
+        command: |
+          STAGE="/tmp/sensel-training-staging"
+          SRC="/opt/sensel-training-data"
+          rm -rf "${STAGE}"
+          mkdir -p "${STAGE}"
+          cp "${SRC}/customer_demo.csv" "${SRC}/engineering_demo.txt" "${SRC}/incident_demo.json" "${STAGE}/"
+          MANIFEST="${STAGE}/manifest.json"
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          stage = Path("/tmp/sensel-training-staging")
+          files = []
+          for path in sorted(stage.glob("*")):
+              if path.name == "manifest.json":
+                  continue
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              files.append({"path": str(path), "sha256": digest, "size": path.stat().st_size})
+          manifest = {"tenant_id": "castle-train-01", "files": files}
+          (stage / "manifest.json").write_text(json.dumps(manifest, indent=2))
+          PY
+          python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-004 --technique-id T1074.001 --result success --artifact-path "${MANIFEST}"

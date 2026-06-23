@@ -1,0 +1,51 @@
+<group name="sensel,caldera,training,">
+
+  <rule id="100610" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-001</field>
+    <field name="technique_id">T1087.001</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-001 Local Account Discovery (T1087.001)</description>
+    <mitre>
+      <id>T1087.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100611" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-002</field>
+    <field name="technique_id">T1016</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-002 Network Configuration Discovery (T1016)</description>
+    <mitre>
+      <id>T1016</id>
+    </mitre>
+  </rule>
+
+  <rule id="100612" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-003</field>
+    <field name="technique_id">T1057</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-003 Process Discovery (T1057)</description>
+    <mitre>
+      <id>T1057</id>
+    </mitre>
+  </rule>
+
+  <rule id="100613" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-004</field>
+    <field name="technique_id">T1074.001</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-004 Synthetic Data Staging (T1074.001)</description>
+    <mitre>
+      <id>T1074.001</id>
+    </mitre>
+  </rule>
+
+</group>

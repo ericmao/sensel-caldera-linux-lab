@@ -1,0 +1,30 @@
+id: SEN-APT29-LNX-01
+title: APT29-inspired Linux Discovery and Safe Staging
+group: castle-train-01
+target: caldera-linux-target-01
+tenant_id: castle-train-01
+timeout_minutes: 10
+abilities:
+  - SEN-LNX-001
+  - SEN-LNX-002
+  - SEN-LNX-003
+  - SEN-LNX-004
+expected_wazuh_rule_ids:
+  - 100610
+  - 100611
+  - 100612
+  - 100613
+cleanup:
+  - remove /tmp/sensel-training-staging
+  - stop and remove sandcat agent process
+  - preserve /var/log/sensel-training/caldera-events.json
+prohibited:
+  - credential dumping
+  - persistence
+  - privilege escalation
+  - lateral movement
+  - remote shell to other systems
+  - destructive encryption
+  - payload download
+  - outbound exfiltration
+  - public IP targets
