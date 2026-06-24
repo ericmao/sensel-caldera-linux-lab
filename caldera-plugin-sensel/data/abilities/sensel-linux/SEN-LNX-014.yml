@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e014-4014-8014-000000000014
+  name: SEN-LNX-014 Simulated Lateral Plan
+  description: Write a simulated lateral-movement plan JSON (no remote execution)
+  tactic: discovery
+  technique:
+    attack_id: T1018
+    name: Remote System Discovery
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-01" || exit 0; PLAN="/tmp/sensel-lateral-plan.json"; python3 /opt/sensel/scripts/lateral-plan.py; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-014 --technique-id T1018 --result success --artifact-path "${PLAN}"

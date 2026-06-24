@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e008-4008-8008-000000000008
+  name: SEN-LNX-008 System Owner User Discovery
+  description: Read-only identity and group membership discovery
+  tactic: discovery
+  technique:
+    attack_id: T1033
+    name: System Owner/User Discovery
+  platforms:
+    linux:
+      sh:
+        command: OUT="/tmp/sensel-discovery-008.txt"; { id; whoami; groups; } > "${OUT}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-008 --technique-id T1033 --result success --artifact-path "${OUT}"

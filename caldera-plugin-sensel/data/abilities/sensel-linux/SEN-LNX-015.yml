@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e015-4015-8015-000000000015
+  name: SEN-LNX-015 Tier2 System Information Discovery
+  description: Read-only host OS and disk information on the tier-2 file server
+  tactic: discovery
+  technique:
+    attack_id: T1082
+    name: System Information Discovery
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-02" || exit 0; OUT="/tmp/sensel-discovery-015.txt"; { echo "=== uname ==="; uname -a; echo "=== os-release ==="; cat /etc/os-release; echo "=== df ==="; df -h; } > "${OUT}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-015 --technique-id T1082 --result success --artifact-path "${OUT}"

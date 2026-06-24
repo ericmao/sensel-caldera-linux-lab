@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e017-4017-8017-000000000017
+  name: SEN-LNX-017 Tier2 Synthetic Data Staging
+  description: Stage tier-2 synthetic demo files locally with manifest and checksums
+  tactic: collection
+  technique:
+    attack_id: T1074.001
+    name: Local Data Staging
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-02" || exit 0; STAGE="/tmp/sensel-training-staging"; SRC="/opt/sensel-training-data-tier2"; rm -rf "${STAGE}"; mkdir -p "${STAGE}"; cp "${SRC}/finance_demo.csv" "${SRC}/server_demo.txt" "${SRC}/records_demo.json" "${STAGE}/"; MANIFEST="${STAGE}/manifest.json"; python3 /opt/sensel/scripts/staging-manifest.py "${STAGE}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-017 --technique-id T1074.001 --result success --artifact-path "${MANIFEST}"

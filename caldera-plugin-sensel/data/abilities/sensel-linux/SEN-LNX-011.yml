@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e011-4011-8011-000000000011
+  name: SEN-LNX-011 Simulated Exfil Size Check
+  description: Local byte-count simulation for exfiltration planning (no network transfer)
+  tactic: exfiltration
+  technique:
+    attack_id: T1030
+    name: Data Transfer Size Limits
+  platforms:
+    linux:
+      sh:
+        command: SIM="/tmp/sensel-exfil-sim.json"; python3 /opt/sensel/scripts/exfil-sim.py; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-011 --technique-id T1030 --result success --artifact-path "${SIM}"

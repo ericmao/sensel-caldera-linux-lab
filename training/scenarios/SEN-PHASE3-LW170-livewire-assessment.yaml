@@ -1,0 +1,50 @@
+id: SEN-PHASE3-LW170
+title: Phase 3 — Livewire Component Manipulation Assessment
+phase: 3
+assessment_type: hexstrike_web_app
+group: castle-train-01
+tenant_id: castle-train-01
+target:
+  host: 192.168.1.170
+  ports: [8080, 8081, 9000, 22]
+  primary_url: http://192.168.1.170:8080/
+  application: livewire-playground
+  component: todo-list
+toolchain:
+  hexstrike_server: http://192.168.1.110:8888
+  scanner: HexStrike MCP + Python Livewire client
+timeout_minutes: 30
+findings:
+  - SEN-WEB-LW-001
+  - SEN-WEB-LW-002
+  - SEN-WEB-LW-003
+  - SEN-WEB-LW-004
+  - SEN-WEB-LW-005
+  - SEN-WEB-LW-006
+expected_wazuh_rule_ids:
+  - 100621
+  - 100622
+  - 100623
+  - 100624
+  - 100625
+  - 100626
+report_outputs:
+  - reports/SEN-PHASE3-LW170-assessment.json
+  - reports/SEN-PHASE3-LW170-summary.md
+  - fixtures/wazuh-alerts-phase3-livewire.ndjson
+correlation_keys:
+  - tenant_id
+  - target_host
+  - finding_id
+  - timestamp
+cleanup:
+  - no persistent artifacts required on assessor host
+  - optional reset of todo-list state on target VM
+prohibited:
+  - credential dumping
+  - persistence
+  - privilege escalation
+  - lateral movement
+  - destructive encryption
+  - outbound exfiltration
+  - public IP targets

@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e006-4006-8006-000000000006
+  name: SEN-LNX-006 File and Directory Discovery
+  description: Read-only inventory of synthetic training data files
+  tactic: discovery
+  technique:
+    attack_id: T1083
+    name: File and Directory Discovery
+  platforms:
+    linux:
+      sh:
+        command: OUT="/tmp/sensel-discovery-006.txt"; find /opt/sensel-training-data -type f -printf '%p %s\n' 2>/dev/null | sort > "${OUT}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-006 --technique-id T1083 --result success --artifact-path "${OUT}"

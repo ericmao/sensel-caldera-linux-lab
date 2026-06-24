@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "hexstrike-ai": {
+      "command": "python3",
+      "args": [
+        "${userHome}/hexstrike-ai/hexstrike_mcp.py",
+        "--server",
+        "http://192.168.1.110:8888"
+      ],
+      "description": "Phase 3 — HexStrike AI on Kali (authorized lab scope only)",
+      "timeout": 300,
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}

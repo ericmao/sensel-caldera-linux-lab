@@ -8,24 +8,4 @@
   platforms:
     linux:
       sh:
-        command: |
-          STAGE="/tmp/sensel-training-staging"
-          SRC="/opt/sensel-training-data"
-          rm -rf "${STAGE}"
-          mkdir -p "${STAGE}"
-          cp "${SRC}/customer_demo.csv" "${SRC}/engineering_demo.txt" "${SRC}/incident_demo.json" "${STAGE}/"
-          MANIFEST="${STAGE}/manifest.json"
-          python3 - <<'PY'
-          import hashlib, json
-          from pathlib import Path
-          stage = Path("/tmp/sensel-training-staging")
-          files = []
-          for path in sorted(stage.glob("*")):
-              if path.name == "manifest.json":
-                  continue
-              digest = hashlib.sha256(path.read_bytes()).hexdigest()
-              files.append({"path": str(path), "sha256": digest, "size": path.stat().st_size})
-          manifest = {"tenant_id": "castle-train-01", "files": files}
-          (stage / "manifest.json").write_text(json.dumps(manifest, indent=2))
-          PY
-          python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-004 --technique-id T1074.001 --result success --artifact-path "${MANIFEST}"
+        command: STAGE="/tmp/sensel-training-staging"; SRC="/opt/sensel-training-data"; rm -rf "${STAGE}"; mkdir -p "${STAGE}"; cp "${SRC}/customer_demo.csv" "${SRC}/engineering_demo.txt" "${SRC}/incident_demo.json" "${STAGE}/"; MANIFEST="${STAGE}/manifest.json"; python3 /opt/sensel/scripts/staging-manifest.py "${STAGE}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-004 --technique-id T1074.001 --result success --artifact-path "${MANIFEST}"

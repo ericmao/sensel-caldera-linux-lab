@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e012-4012-8012-000000000012
+  name: SEN-LNX-012 Remote System Discovery
+  description: Discover peer hosts on the lab Docker network from the initial foothold host
+  tactic: discovery
+  technique:
+    attack_id: T1018
+    name: Remote System Discovery
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-01" || exit 0; OUT="/tmp/sensel-discovery-012.txt"; { echo "=== getent hosts ==="; getent hosts caldera caldera-linux-target-02 target-linux-02 2>/dev/null || true; echo "=== arp ==="; ip neigh show 2>/dev/null || true; } > "${OUT}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-012 --technique-id T1018 --result success --artifact-path "${OUT}"

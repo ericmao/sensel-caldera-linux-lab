@@ -7,8 +7,9 @@ alwaysApply: true
 
 # SenseL Caldera Linux Lab Rules
 
-- Only act on localhost Docker resources for this repository.
-- Never target public IPs, host network, Docker socket, Proxmox, SOC admin services, databases, or Tailscale admin.
+- Only act on localhost Docker resources for in-repo automation (Caldera compose, abilities, scripts).
+- Phase 3 (HexStrike MCP + Kali) is optional and external: only when the operator explicitly enables it and states authorized lab scope. Default Kali target: `192.168.1.110` on lab LAN — never public IPs, Proxmox, SOC admin, databases, or Tailscale admin.
+- Never target public IPs, host network, Docker socket, Proxmox, SOC admin services, databases, or Tailscale admin from repo automation.
 - Do not add credential dumping, persistence, privilege escalation, lateral movement, exploitation, reverse shells, payload downloads, ransomware behavior, or external exfiltration.
 - Do not use privileged containers.
 - All exercises must write structured JSON markers.

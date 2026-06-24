@@ -1,5 +1,6 @@
 id: SEN-APT29-LNX-01
 title: APT29-inspired Linux Discovery and Safe Staging
+adversary_profile: SEN-LNX-Chain-Intro
 group: castle-train-01
 target: caldera-linux-target-01
 tenant_id: castle-train-01

@@ -1,0 +1,85 @@
+{
+  "operation": {
+    "id": "op-demo-chain-c",
+    "name": "SEN-APT29-LNX-04",
+    "group": "castle-train-01",
+    "start": "2026-06-22T10:59:00Z",
+    "finish": "2026-06-22T11:09:00Z",
+    "host_group": {
+      "caldera-linux-target-01": {
+        "paw": "demo-paw-01",
+        "platform": "linux"
+      },
+      "caldera-linux-target-02": {
+        "paw": "demo-paw-02",
+        "platform": "linux"
+      }
+    }
+  },
+  "chain": [
+    {
+      "ability_id": "a1b2c3d4-e012-4012-8012-000000000012",
+      "ability_name": "SEN-LNX-012 Remote System Discovery",
+      "paw": "demo-paw-01",
+      "command": "getent hosts",
+      "finish": "2026-06-22T11:00:05Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e013-4013-8013-000000000013",
+      "ability_name": "SEN-LNX-013 Remote Service Discovery",
+      "paw": "demo-paw-01",
+      "command": "ping",
+      "finish": "2026-06-22T11:01:20Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e014-4014-8014-000000000014",
+      "ability_name": "SEN-LNX-014 Simulated Lateral Plan",
+      "paw": "demo-paw-01",
+      "command": "lateral-plan.py",
+      "finish": "2026-06-22T11:02:35Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e015-4015-8015-000000000015",
+      "ability_name": "SEN-LNX-015 Tier2 System Information Discovery",
+      "paw": "demo-paw-02",
+      "command": "uname -a",
+      "finish": "2026-06-22T11:03:50Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e016-4016-8016-000000000016",
+      "ability_name": "SEN-LNX-016 Tier2 File and Directory Discovery",
+      "paw": "demo-paw-02",
+      "command": "find tier2",
+      "finish": "2026-06-22T11:05:05Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e017-4017-8017-000000000017",
+      "ability_name": "SEN-LNX-017 Tier2 Synthetic Data Staging",
+      "paw": "demo-paw-02",
+      "command": "cp tier2 staging",
+      "finish": "2026-06-22T11:06:20Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e018-4018-8018-000000000018",
+      "ability_name": "SEN-LNX-018 Tier2 Archive Staged Collection",
+      "paw": "demo-paw-02",
+      "command": "tar czf",
+      "finish": "2026-06-22T11:07:35Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e019-4019-8019-000000000019",
+      "ability_name": "SEN-LNX-019 Tier2 Simulated Exfil Size Check",
+      "paw": "demo-paw-02",
+      "command": "exfil-sim.py tier2",
+      "finish": "2026-06-22T11:08:50Z",
+      "status": 0
+    }
+  ]
+}

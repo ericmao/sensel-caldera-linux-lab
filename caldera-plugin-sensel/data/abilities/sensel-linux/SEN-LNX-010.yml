@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e010-4010-8010-000000000010
+  name: SEN-LNX-010 Automated Collection
+  description: Aggregate prior discovery artifacts into one collection directory
+  tactic: collection
+  technique:
+    attack_id: T1119
+    name: Automated Collection
+  platforms:
+    linux:
+      sh:
+        command: COLLECT="/tmp/sensel-auto-collect"; rm -rf "${COLLECT}"; python3 /opt/sensel/scripts/auto-collect.py; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-010 --technique-id T1119 --result success --artifact-path "${COLLECT}"

@@ -48,4 +48,266 @@
     </mitre>
   </rule>
 
+  <rule id="100614" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-005</field>
+    <field name="technique_id">T1082</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-005 System Information Discovery (T1082)</description>
+    <mitre>
+      <id>T1082</id>
+    </mitre>
+  </rule>
+
+  <rule id="100615" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-006</field>
+    <field name="technique_id">T1083</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-006 File and Directory Discovery (T1083)</description>
+    <mitre>
+      <id>T1083</id>
+    </mitre>
+  </rule>
+
+  <rule id="100616" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-007</field>
+    <field name="technique_id">T1560.001</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-007 Archive Staged Collection (T1560.001)</description>
+    <mitre>
+      <id>T1560.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100617" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-008</field>
+    <field name="technique_id">T1033</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-008 System Owner User Discovery (T1033)</description>
+    <mitre>
+      <id>T1033</id>
+    </mitre>
+  </rule>
+
+  <rule id="100618" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-009</field>
+    <field name="technique_id">T1007</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-009 System Service Discovery (T1007)</description>
+    <mitre>
+      <id>T1007</id>
+    </mitre>
+  </rule>
+
+  <rule id="100619" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-010</field>
+    <field name="technique_id">T1119</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-010 Automated Collection (T1119)</description>
+    <mitre>
+      <id>T1119</id>
+    </mitre>
+  </rule>
+
+  <rule id="100620" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-011</field>
+    <field name="technique_id">T1030</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-011 Simulated Exfil Size Check (T1030)</description>
+    <mitre>
+      <id>T1030</id>
+    </mitre>
+  </rule>
+
+  <!-- Chain C — simulated lateral multi-host (SEN-LNX-012..019) -->
+
+  <rule id="100627" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-012</field>
+    <field name="technique_id">T1018</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-012 Remote System Discovery (T1018)</description>
+    <mitre>
+      <id>T1018</id>
+    </mitre>
+  </rule>
+
+  <rule id="100628" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-013</field>
+    <field name="technique_id">T1046</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-013 Remote Service Discovery (T1046)</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+  </rule>
+
+  <rule id="100629" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-014</field>
+    <field name="technique_id">T1018</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-014 Simulated Lateral Plan (T1018)</description>
+    <mitre>
+      <id>T1018</id>
+    </mitre>
+  </rule>
+
+  <rule id="100630" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-015</field>
+    <field name="technique_id">T1082</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-015 Tier2 System Information Discovery (T1082)</description>
+    <mitre>
+      <id>T1082</id>
+    </mitre>
+  </rule>
+
+  <rule id="100631" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-016</field>
+    <field name="technique_id">T1083</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-016 Tier2 File and Directory Discovery (T1083)</description>
+    <mitre>
+      <id>T1083</id>
+    </mitre>
+  </rule>
+
+  <rule id="100632" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-017</field>
+    <field name="technique_id">T1074.001</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-017 Tier2 Synthetic Data Staging (T1074.001)</description>
+    <mitre>
+      <id>T1074.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100633" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-018</field>
+    <field name="technique_id">T1560.001</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-018 Tier2 Archive Staged Collection (T1560.001)</description>
+    <mitre>
+      <id>T1560.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100634" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-LNX-019</field>
+    <field name="technique_id">T1030</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">caldera_training_marker</field>
+    <description>SenseL Caldera training: SEN-LNX-019 Tier2 Simulated Exfil Size Check (T1030)</description>
+    <mitre>
+      <id>T1030</id>
+    </mitre>
+  </rule>
+
+  <!-- Phase 3 — external web assessment markers (HexStrike / Livewire lab) -->
+
+  <rule id="100621" level="10">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-PHASE3-LW170</field>
+    <field name="finding_id">SEN-WEB-LW-001</field>
+    <field name="technique_id">T1190</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">phase3_pentest_marker</field>
+    <description>SenseL Phase3: Livewire unauthenticated component manipulation (T1190)</description>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+  </rule>
+
+  <rule id="100622" level="8">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-PHASE3-LW170</field>
+    <field name="finding_id">SEN-WEB-LW-002</field>
+    <field name="technique_id">T1565.001</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">phase3_pentest_marker</field>
+    <description>SenseL Phase3: Livewire snapshot replay accepted (T1565.001)</description>
+    <mitre>
+      <id>T1565.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="100623" level="6">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-PHASE3-LW170</field>
+    <field name="finding_id">SEN-WEB-LW-003</field>
+    <field name="technique_id">T1592.002</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">phase3_pentest_marker</field>
+    <description>SenseL Phase3: Verbose Livewire/Laravel error disclosure (T1592.002)</description>
+    <mitre>
+      <id>T1592.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100624" level="4">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-PHASE3-LW170</field>
+    <field name="finding_id">SEN-WEB-LW-004</field>
+    <field name="technique_id">T1592.002</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">phase3_pentest_marker</field>
+    <description>SenseL Phase3: Missing CSP/X-Frame-Options on Livewire UI (T1592.002)</description>
+    <mitre>
+      <id>T1592.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100625" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-PHASE3-LW170</field>
+    <field name="finding_id">SEN-WEB-LW-005</field>
+    <field name="technique_id">T1190</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">phase3_pentest_marker</field>
+    <description>SenseL Phase3: CVE-2025-54068 synthetic hydration blocked (informational)</description>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+  </rule>
+
+  <rule id="100626" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="scenario_id">SEN-PHASE3-LW170</field>
+    <field name="finding_id">SEN-WEB-LW-006</field>
+    <field name="technique_id">T1190</field>
+    <field name="tenant_id">castle-train-01</field>
+    <field name="event_type">phase3_pentest_marker</field>
+    <description>SenseL Phase3: Livewire CSRF/checksum controls effective (informational)</description>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+  </rule>
+
 </group>

@@ -2,6 +2,8 @@
 
 Minimal SenseL / Caldera Linux training lab using two Docker containers on localhost.
 
+**Training Guide 2.0:** [training/TRAINING-GUIDE-2.0.md](training/TRAINING-GUIDE-2.0.md) — four scenarios, nineteen safe abilities, Chain C dual-target simulated lateral.
+
 ## Architecture
 
 ```mermaid
@@ -12,13 +14,21 @@ flowchart LR
   subgraph net [caldera_lab_net]
     C["caldera container\n:8888 internal"]
     T["target_linux container\nSandcat + JSON marker"]
+    T2["target_linux_02 container\nSandcat + JSON marker"]
   end
   subgraph remote [Phase2_External]
     WM["Wazuh Manager\nenv specified"]
   end
+  subgraph phase3 [Phase3_Optional]
+    K["Kali VM\nHexStrike :8888"]
+    MCP["Cursor MCP client"]
+  end
   UI --> C
   T -->|"http://caldera:8888"| C
+  T2 -->|"http://caldera:8888"| C
   T -.->|"1514/1515 Phase 2"| WM
+  MCP -->|"HTTP LAN"| K
+  K -.->|"authorized scans"| host
 ```
 
 ### Network and port design
@@ -27,6 +37,7 @@ flowchart LR
 |-----------|----------|-------|
 | `caldera` | `127.0.0.1:8888` on host | UI/C2 HTTP only on localhost |
 | `target-linux` | none | reaches Caldera via Docker DNS `caldera:8888` |
+| `target-linux-02` | none | Chain C tier-2 file server; same network |
 | `caldera_lab_net` | bridge | isolated lab network |
 | Wazuh Manager | external | configured via `.env`, not deployed here |
 
@@ -66,9 +77,12 @@ Key values:
 |----------|---------|---------|
 | `CALDERA_REF` | `5.3.0` | Caldera git tag/branch |
 | `TENANT_ID` | `castle-train-01` | training tenant |
-| `TARGET_AGENT_NAME` | `caldera-linux-target-01` | target hostname |
+| `TARGET_AGENT_NAME` | `caldera-linux-target-01` | primary target hostname |
+| `TARGET_AGENT_NAME_02` | `caldera-linux-target-02` | Chain C tier-2 target hostname |
 | `SANDCAT_GROUP` | `castle-train-01` | Sandcat group |
 | `ENABLE_WAZUH` | `false` | Phase 1 skips Wazuh agent |
+| `ENABLE_HEXSTRIKE` | `false` | Phase 3 flag (MCP + Kali, optional) |
+| `HEXSTRIKE_SERVER_URL` | `http://192.168.1.110:8888` | Kali HexStrike server |
 | `SANDCAT_DEPLOY_COMMAND` | empty | optional UI command override |
 
 ## Sandcat deployment mechanism
@@ -124,28 +138,83 @@ WAZUH_ENROLLMENT_PORT=1515
 
 Difference: agent calls `agent-auth` against enrollment service; manager must allow agent registration.
 
-## Caldera UI workflow
+## HexStrike MCP + Kali (Phase 3)
+
+Optional third stage: Cursor drives **HexStrike AI** on a Kali VM (`192.168.1.110` by default) while Phase 1/2 Docker lab keeps running on localhost.
+
+Full guide: [docs/PHASE3-HEXSTRIKE.md](docs/PHASE3-HEXSTRIKE.md).
 
 ```bash
-python3 scripts/trainingctl.py run-manual
+# 1. On Kali: install and start hexstrike_server.py (see docs/PHASE3-HEXSTRIKE.md)
+# 2. On Mac: set HEXSTRIKE_* in .env, then:
+make hexstrike-mcp      # writes .cursor/mcp.json (gitignored)
+make hexstrike-check    # ping + /health
+# 3. Reload Cursor → Settings → MCP → hexstrike-ai connected
+```
+
+Split-host model: **tool server on Kali**, **MCP client in Cursor on Mac**. Caldera stays on `127.0.0.1:8888`; HexStrike on Kali uses LAN `:8888` — no port clash.
+
+## Caldera UI workflow
+
+Full instructor steps: [training/TRAINING-GUIDE-2.0.md](training/TRAINING-GUIDE-2.0.md).
+
+```bash
+# Intro scenario (4 abilities)
+python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-01
+
+# Chain A — discovery, staging, archive (6 abilities)
+python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-02
+
+# Chain B — auto-collect, simulated exfil prep (6 abilities)
+python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-03
+
+# Chain C — dual-target simulated lateral (8 abilities, select BOTH agents)
+python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-04
 ```
 
 Summary:
 
-1. Create adversary profile with abilities `SEN-LNX-001` .. `SEN-LNX-004`
-2. Select target-linux Sandcat agent (`castle-train-01`)
-3. Start operation
-4. Export operation report JSON
-5. Correlate with Wazuh alerts
+1. Create adversary profile (`SEN-LNX-Chain-Intro`, `SEN-LNX-Chain-A`, `SEN-LNX-Chain-B`, or `SEN-LNX-Chain-C`)
+2. Add abilities **in order** — do **not** use empty ad-hoc profile
+3. Select Sandcat agent(s) (`castle-train-01`; Chain C requires **both** targets)
+4. Start operation with Autonomous ON
+5. Export operation report JSON
+6. Correlate with Wazuh alerts
+
+## Training scenarios (v2.0)
+
+| Scenario ID | Profile name | Steps | Focus |
+|-------------|--------------|-------|-------|
+| `SEN-APT29-LNX-01` | `SEN-LNX-Chain-Intro` | 4 | Discovery + staging intro |
+| `SEN-APT29-LNX-02` | `SEN-LNX-Chain-A` | 6 | Discovery → staging → tar archive |
+| `SEN-APT29-LNX-03` | `SEN-LNX-Chain-B` | 6 | Identity/service discovery → auto-collect → simulated exfil size |
+| `SEN-APT29-LNX-04` | `SEN-LNX-Chain-C` | 8 | Dual-target simulated lateral → tier-2 staging → archive → sim exfil |
 
 ## Safe Linux abilities
 
-| ID | ATT&CK | Expected Wazuh rule |
-|----|--------|---------------------|
-| SEN-LNX-001 | T1087.001 | 100610 |
-| SEN-LNX-002 | T1016 | 100611 |
-| SEN-LNX-003 | T1057 | 100612 |
-| SEN-LNX-004 | T1074.001 | 100613 |
+| ID | ATT&CK | Tactic | Expected Wazuh rule |
+|----|--------|--------|---------------------|
+| SEN-LNX-001 | T1087.001 | Discovery | 100610 |
+| SEN-LNX-002 | T1016 | Discovery | 100611 |
+| SEN-LNX-003 | T1057 | Discovery | 100612 |
+| SEN-LNX-004 | T1074.001 | Collection | 100613 |
+| SEN-LNX-005 | T1082 | Discovery | 100614 |
+| SEN-LNX-006 | T1083 | Discovery | 100615 |
+| SEN-LNX-007 | T1560.001 | Collection | 100616 |
+| SEN-LNX-008 | T1033 | Discovery | 100617 |
+| SEN-LNX-009 | T1007 | Discovery | 100618 |
+| SEN-LNX-010 | T1119 | Collection | 100619 |
+| SEN-LNX-011 | T1030 | Exfiltration (simulated) | 100620 |
+| SEN-LNX-012 | T1018 | Discovery | 100627 |
+| SEN-LNX-013 | T1046 | Discovery | 100628 |
+| SEN-LNX-014 | T1018 | Discovery (simulated lateral plan) | 100629 |
+| SEN-LNX-015 | T1082 | Discovery | 100630 |
+| SEN-LNX-016 | T1083 | Discovery | 100631 |
+| SEN-LNX-017 | T1074.001 | Collection | 100632 |
+| SEN-LNX-018 | T1560.001 | Collection | 100633 |
+| SEN-LNX-019 | T1030 | Exfiltration (simulated) | 100634 |
+
+SEN-LNX-011 and SEN-LNX-019 perform **local byte counting only** — no network exfiltration. Chain C uses **simulated lateral planning** — no SSH pivot or remote execution.
 
 Markers written to `/var/log/sensel-training/caldera-events.json` on target-linux.
 
@@ -171,11 +240,12 @@ make test
 
 ```bash
 python3 scripts/trainingctl.py correlate \
+  --scenario SEN-APT29-LNX-01 \
   --operation-report fixtures/caldera-operation-report.sample.json \
   --wazuh-alerts fixtures/wazuh-alerts.ndjson
 ```
 
-Output:
+Output (per scenario):
 
 - `reports/SEN-APT29-LNX-01-correlation.json`
 - `reports/SEN-APT29-LNX-01-summary.md`
@@ -191,6 +261,8 @@ Correlation keys: `tenant_id + hostname + scenario_id + time window`. `operation
 | `make test` | pytest |
 | `make wazuh-test` | wazuh-logtest against rule fixtures |
 | `make validate` | trainingctl validate + compose config |
+| `make hexstrike-mcp` | generate `.cursor/mcp.json` from `.env` (Phase 3) |
+| `make hexstrike-check` | ping Kali + HexStrike `/health` |
 | `make clean` | cleanup staging/sandcat and remove volumes |
 
 ## Cleanup and troubleshooting
@@ -214,6 +286,7 @@ In a non-privileged Docker container, full native process/audit telemetry is not
 - Caldera command results
 - JSON training markers
 - Wazuh JSON log + FIM ingestion (Phase 2)
+- HexStrike MCP on Kali for AI-assisted recon against authorized lab targets (Phase 3)
 
 For native Linux auditd / Sysmon-like process telemetry, use a VM or dedicated sensor.
 
@@ -222,10 +295,12 @@ For native Linux auditd / Sysmon-like process telemetry, use a VM or dedicated s
 ```
 caldera/                  Caldera server image build
 target-linux/             Target container (Sandcat + marker writer)
-caldera-plugin-sensel/    Four safe Linux abilities
+caldera-plugin-sensel/    Eleven safe Linux abilities (SEN-LNX-001..011)
 wazuh/                    Agent fragment + manager rules + test events
-training/scenarios/       Scenario definition
-scripts/                  trainingctl, bootstrap, correlation
+training/                 Scenario definitions + TRAINING-GUIDE-2.0.md
+scripts/                  trainingctl, bootstrap, correlation, hexstrike MCP
+scripts/kali/             Kali-side HexStrike server setup (Phase 3)
+docs/                     PHASE3-HEXSTRIKE.md
 tests/                    pytest suite
 fixtures/                 sample alerts and operation report
 ```

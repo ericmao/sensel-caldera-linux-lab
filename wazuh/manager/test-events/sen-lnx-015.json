@@ -1,0 +1,1 @@
+{"timestamp":"2026-06-22T11:03:45Z","scenario_id":"SEN-LNX-015","technique_id":"T1082","host":"caldera-linux-target-02","tenant_id":"castle-train-01","event_type":"caldera_training_marker","result":"success","artifact_path":"/tmp/sensel-discovery-015.txt"}

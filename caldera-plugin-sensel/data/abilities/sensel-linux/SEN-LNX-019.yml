@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e019-4019-8019-000000000019
+  name: SEN-LNX-019 Tier2 Simulated Exfil Size Check
+  description: Local byte-count simulation on tier-2 host (no network transfer)
+  tactic: exfiltration
+  technique:
+    attack_id: T1030
+    name: Data Transfer Size Limits
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-02" || exit 0; SIM="/tmp/sensel-exfil-sim-tier2.json"; python3 /opt/sensel/scripts/exfil-sim.py --stage /tmp/sensel-training-staging --archive /tmp/sensel-staging-tier2.tar.gz --out "${SIM}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-019 --technique-id T1030 --result success --artifact-path "${SIM}"

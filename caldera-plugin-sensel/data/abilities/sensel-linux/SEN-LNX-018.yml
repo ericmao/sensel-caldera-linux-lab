@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e018-4018-8018-000000000018
+  name: SEN-LNX-018 Tier2 Archive Staged Collection
+  description: Compress tier-2 staged synthetic data with tar.gz
+  tactic: collection
+  technique:
+    attack_id: T1560.001
+    name: 'Archive via Utility'
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-02" || exit 0; ARCHIVE="/tmp/sensel-staging-tier2.tar.gz"; STAGE="/tmp/sensel-training-staging"; tar czf "${ARCHIVE}" -C "${STAGE}" .; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-018 --technique-id T1560.001 --result success --artifact-path "${ARCHIVE}"

@@ -1,4 +1,4 @@
-.PHONY: up down status test wazuh-test validate clean config
+.PHONY: up down status test wazuh-test validate clean config hexstrike-check hexstrike-mcp
 
 COMPOSE ?= docker compose
 
@@ -28,3 +28,9 @@ clean:
 
 config:
 	$(COMPOSE) config
+
+hexstrike-check:
+	bash scripts/hexstrike-check.sh
+
+hexstrike-mcp:
+	bash scripts/setup-hexstrike-mcp.sh

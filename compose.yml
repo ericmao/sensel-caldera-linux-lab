@@ -65,6 +65,44 @@ services:
           create_host_path: true
     restart: unless-stopped
 
+  target-linux-02:
+    build:
+      context: .
+      dockerfile: target-linux/Dockerfile
+    image: sensel-target-linux:latest
+    container_name: target-linux-02
+    hostname: ${TARGET_AGENT_NAME_02:-caldera-linux-target-02}
+    networks:
+      - caldera_lab_net
+    depends_on:
+      caldera:
+        condition: service_healthy
+    environment:
+      CALDERA_HOST: caldera
+      CALDERA_PORT: "8888"
+      SANDCAT_GROUP: ${SANDCAT_GROUP:-castle-train-01}
+      TENANT_ID: ${TENANT_ID:-castle-train-01}
+      TARGET_AGENT_NAME: ${TARGET_AGENT_NAME_02:-caldera-linux-target-02}
+      ENABLE_WAZUH: ${ENABLE_WAZUH:-false}
+      WAZUH_MANAGER_HOST: ${WAZUH_MANAGER_HOST:-}
+      WAZUH_MANAGER_PORT: ${WAZUH_MANAGER_PORT:-1514}
+      WAZUH_ENROLLMENT_HOST: ${WAZUH_ENROLLMENT_HOST:-}
+      WAZUH_ENROLLMENT_PORT: ${WAZUH_ENROLLMENT_PORT:-1515}
+      WAZUH_AGENT_NAME: ${WAZUH_AGENT_NAME_02:-caldera-linux-target-02}
+      WAZUH_ENROLLMENT_MODE: ${WAZUH_ENROLLMENT_MODE:-none}
+      SANDCAT_DEPLOY_COMMAND: ${SANDCAT_DEPLOY_COMMAND:-}
+      CALDERA_API_KEY: ${CALDERA_API_KEY:-ADMIN123}
+      LATERAL_TARGET_HOST: ${TARGET_AGENT_NAME_02:-caldera-linux-target-02}
+    volumes:
+      - sensel_training_logs_02:/var/log/sensel-training
+      - type: bind
+        source: ./secrets
+        target: /run/secrets/wazuh
+        read_only: true
+        bind:
+          create_host_path: true
+    restart: unless-stopped
+
 networks:
   caldera_lab_net:
     name: caldera_lab_net
@@ -75,3 +113,4 @@ volumes:
   caldera_plugins:
   caldera_logs:
   sensel_training_logs:
+  sensel_training_logs_02:

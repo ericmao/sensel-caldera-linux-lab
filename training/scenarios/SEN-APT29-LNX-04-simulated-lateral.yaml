@@ -1,0 +1,47 @@
+id: SEN-APT29-LNX-04
+title: APT29-inspired Linux Simulated Lateral Multi-Host Chain
+adversary_profile: SEN-LNX-Chain-C
+group: castle-train-01
+target: caldera-linux-target-01
+targets:
+  - caldera-linux-target-01
+  - caldera-linux-target-02
+tenant_id: castle-train-01
+timeout_minutes: 20
+abilities:
+  - SEN-LNX-012
+  - SEN-LNX-013
+  - SEN-LNX-014
+  - SEN-LNX-015
+  - SEN-LNX-016
+  - SEN-LNX-017
+  - SEN-LNX-018
+  - SEN-LNX-019
+expected_wazuh_rule_ids:
+  - 100627
+  - 100628
+  - 100629
+  - 100630
+  - 100631
+  - 100632
+  - 100633
+  - 100634
+cleanup:
+  - remove /tmp/sensel-discovery-012.txt
+  - remove /tmp/sensel-discovery-013.txt
+  - remove /tmp/sensel-lateral-plan.json
+  - remove /tmp/sensel-discovery-015.txt
+  - remove /tmp/sensel-discovery-016.txt
+  - remove /tmp/sensel-training-staging
+  - remove /tmp/sensel-staging-tier2.tar.gz
+  - remove /tmp/sensel-exfil-sim-tier2.json
+prohibited:
+  - credential dumping
+  - persistence
+  - privilege escalation
+  - lateral movement
+  - remote shell to other systems
+  - destructive encryption
+  - payload download
+  - outbound exfiltration
+  - public IP targets

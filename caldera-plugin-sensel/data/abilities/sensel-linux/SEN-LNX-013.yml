@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e013-4013-8013-000000000013
+  name: SEN-LNX-013 Remote Service Discovery
+  description: Safe connectivity check toward the tier-2 file server host (no port scan)
+  tactic: discovery
+  technique:
+    attack_id: T1046
+    name: Network Service Discovery
+  platforms:
+    linux:
+      sh:
+        command: test "$(hostname)" = "caldera-linux-target-01" || exit 0; OUT="/tmp/sensel-discovery-013.txt"; PEER="caldera-linux-target-02"; { echo "=== resolve ${PEER} ==="; getent hosts "${PEER}"; echo "=== ping ==="; ping -c1 -W1 "${PEER}" 2>&1 || true; } > "${OUT}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-013 --technique-id T1046 --result success --artifact-path "${OUT}"

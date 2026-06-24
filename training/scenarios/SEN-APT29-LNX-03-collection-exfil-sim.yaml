@@ -1,0 +1,38 @@
+id: SEN-APT29-LNX-03
+title: APT29-inspired Linux Collection and Simulated Exfil Prep
+adversary_profile: SEN-LNX-Chain-B
+group: castle-train-01
+target: caldera-linux-target-01
+tenant_id: castle-train-01
+timeout_minutes: 15
+abilities:
+  - SEN-LNX-003
+  - SEN-LNX-008
+  - SEN-LNX-009
+  - SEN-LNX-010
+  - SEN-LNX-004
+  - SEN-LNX-011
+expected_wazuh_rule_ids:
+  - 100612
+  - 100617
+  - 100618
+  - 100619
+  - 100613
+  - 100620
+cleanup:
+  - remove /tmp/sensel-discovery-003.txt
+  - remove /tmp/sensel-discovery-008.txt
+  - remove /tmp/sensel-discovery-009.txt
+  - remove /tmp/sensel-auto-collect
+  - remove /tmp/sensel-training-staging
+  - remove /tmp/sensel-exfil-sim.json
+prohibited:
+  - credential dumping
+  - persistence
+  - privilege escalation
+  - lateral movement
+  - remote shell to other systems
+  - destructive encryption
+  - payload download
+  - outbound exfiltration
+  - public IP targets

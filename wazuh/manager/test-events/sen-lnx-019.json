@@ -1,0 +1,1 @@
+{"timestamp":"2026-06-22T11:08:45Z","scenario_id":"SEN-LNX-019","technique_id":"T1030","host":"caldera-linux-target-02","tenant_id":"castle-train-01","event_type":"caldera_training_marker","result":"success","artifact_path":"/tmp/sensel-exfil-sim-tier2.json"}

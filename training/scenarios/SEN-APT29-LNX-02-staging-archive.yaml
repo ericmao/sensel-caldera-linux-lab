@@ -1,0 +1,38 @@
+id: SEN-APT29-LNX-02
+title: APT29-inspired Linux Discovery Staging and Archive
+adversary_profile: SEN-LNX-Chain-A
+group: castle-train-01
+target: caldera-linux-target-01
+tenant_id: castle-train-01
+timeout_minutes: 15
+abilities:
+  - SEN-LNX-001
+  - SEN-LNX-002
+  - SEN-LNX-005
+  - SEN-LNX-006
+  - SEN-LNX-004
+  - SEN-LNX-007
+expected_wazuh_rule_ids:
+  - 100610
+  - 100611
+  - 100614
+  - 100615
+  - 100613
+  - 100616
+cleanup:
+  - remove /tmp/sensel-discovery-001.txt
+  - remove /tmp/sensel-discovery-002.txt
+  - remove /tmp/sensel-discovery-005.txt
+  - remove /tmp/sensel-discovery-006.txt
+  - remove /tmp/sensel-training-staging
+  - remove /tmp/sensel-staging.tar.gz
+prohibited:
+  - credential dumping
+  - persistence
+  - privilege escalation
+  - lateral movement
+  - remote shell to other systems
+  - destructive encryption
+  - payload download
+  - outbound exfiltration
+  - public IP targets

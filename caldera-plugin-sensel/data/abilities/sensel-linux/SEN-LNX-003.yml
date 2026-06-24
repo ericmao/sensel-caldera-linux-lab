@@ -8,7 +8,4 @@
   platforms:
     linux:
       sh:
-        command: |
-          OUT="/tmp/sensel-discovery-003.txt"
-          ps -eo pid,ppid,user,cmd --no-headers > "${OUT}"
-          python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-003 --technique-id T1057 --result success --artifact-path "${OUT}"
+        command: OUT="/tmp/sensel-discovery-003.txt"; ps -eo pid,ppid,user,cmd --no-headers > "${OUT}"; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-003 --technique-id T1057 --result success --artifact-path "${OUT}"

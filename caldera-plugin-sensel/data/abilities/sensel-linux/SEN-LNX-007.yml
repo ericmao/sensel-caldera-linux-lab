@@ -1,0 +1,11 @@
+- id: a1b2c3d4-e007-4007-8007-000000000007
+  name: SEN-LNX-007 Archive Staged Collection
+  description: Compress locally staged synthetic data with tar.gz
+  tactic: collection
+  technique:
+    attack_id: T1560.001
+    name: 'Archive via Utility'
+  platforms:
+    linux:
+      sh:
+        command: ARCHIVE="/tmp/sensel-staging.tar.gz"; STAGE="/tmp/sensel-training-staging"; tar czf "${ARCHIVE}" -C "${STAGE}" .; python3 /opt/sensel/scripts/marker-writer.py --scenario-id SEN-LNX-007 --technique-id T1560.001 --result success --artifact-path "${ARCHIVE}"
