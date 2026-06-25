@@ -17,7 +17,7 @@ ENV CALDERA_REF=${CALDERA_REF}
 WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl unzip python3-dev python3-pip mingw-w64 zlib1g gcc ca-certificates \
+    git curl wget unzip python3-dev python3-pip mingw-w64 zlib1g gcc ca-certificates net-tools \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://go.dev/dl/go1.25.0.linux-amd64.tar.gz -o go.tar.gz \

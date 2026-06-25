@@ -49,10 +49,11 @@ def test_scenario_yaml_schema(scenario: dict) -> None:
 
 
 def test_scenario_ability_files_exist(root: Path, scenario: dict) -> None:
-    ability_dir = root / "caldera-plugin-sensel/data/abilities/sensel-linux"
+    ability_root = root / "caldera-plugin-sensel/data/abilities"
     for ability in scenario["abilities"]:
-        path = ability_dir / f"{ability}.yml"
-        assert path.exists(), f"missing ability file {path}"
+        matches = list(ability_root.rglob(f"{ability}.yml"))
+        assert len(matches) == 1, f"expected one ability file for {ability}, found {len(matches)}"
+        path = matches[0]
 
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert isinstance(data, list)

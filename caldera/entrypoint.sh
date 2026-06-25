@@ -11,8 +11,9 @@ if [ ! -f "${SENSEL_DST}/hook.py" ]; then
   mkdir -p "${SENSEL_DST}"
   cp -a "${SENSEL_BAKED}/." "${SENSEL_DST}/"
 else
-  mkdir -p "${SENSEL_DST}/data/abilities/sensel-linux"
-  cp -a "${SENSEL_BAKED}/data/abilities/sensel-linux/." "${SENSEL_DST}/data/abilities/sensel-linux/"
+  mkdir -p "${SENSEL_DST}/data/abilities"
+  rm -rf "${SENSEL_DST}/data/abilities/sensel-linux"
+  cp -a "${SENSEL_BAKED}/data/abilities/." "${SENSEL_DST}/data/abilities/"
 fi
 
 if [ ! -f "${LOCAL}" ]; then

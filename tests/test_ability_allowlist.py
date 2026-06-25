@@ -3,19 +3,22 @@ from pathlib import Path
 import yaml
 
 ALLOWED = {f"SEN-LNX-{idx:03d}" for idx in range(1, 20)}
+ABILITY_ROOT = Path("caldera-plugin-sensel/data/abilities")
+
+
+def _ability_paths(root: Path) -> list[Path]:
+    return sorted((root / ABILITY_ROOT).rglob("SEN-LNX-*.yml"))
 
 
 def test_ability_allowlist(root: Path) -> None:
-    ability_dir = root / "caldera-plugin-sensel/data/abilities/sensel-linux"
-    files = sorted(p.stem for p in ability_dir.glob("SEN-LNX-*.yml"))
+    files = [p.stem for p in _ability_paths(root)]
     assert set(files) == ALLOWED
     assert len(files) == 19
 
 
 def _load_ability_commands(root: Path) -> list[tuple[str, str]]:
-    ability_dir = root / "caldera-plugin-sensel/data/abilities/sensel-linux"
     commands: list[tuple[str, str]] = []
-    for path in sorted(ability_dir.glob("*.yml")):
+    for path in _ability_paths(root):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         command = data[0]["platforms"]["linux"]["sh"]["command"]
         commands.append((path.name, command))
@@ -33,10 +36,16 @@ def test_ability_commands_are_single_line(root: Path) -> None:
         assert ";" in command, f"{name} command should use semicolon separators"
 
 
+def test_ability_paths_include_tactic_folder(root: Path) -> None:
+    for path in _ability_paths(root):
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        tactic = data[0]["tactic"]
+        assert tactic in path.as_posix(), f"{path.name} must live under a {tactic}/ folder for Caldera 5.3"
+
+
 def test_abilities_do_not_reference_sensitive_paths(root: Path) -> None:
-    ability_dir = root / "caldera-plugin-sensel/data/abilities/sensel-linux"
     banned = ["/etc/shadow", "id_rsa", "mimikatz", "curl http", "wget "]
-    for path in ability_dir.glob("*.yml"):
+    for path in _ability_paths(root):
         content = path.read_text(encoding="utf-8").lower()
         for token in banned:
             assert token not in content, f"{path.name} contains banned token {token}"

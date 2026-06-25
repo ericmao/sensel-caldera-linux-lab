@@ -286,7 +286,7 @@ python3 scripts/trainingctl.py cleanup
 
 | 現象 | 原因 | 處理 |
 |------|------|------|
-| Ability 在 UI 消失 | YAML 解析失敗（如 inline `-F:`） | `make test`；重啟 caldera |
+| Ability 在 UI 消失（如 SEN-LNX-004） | Caldera 5.3 要求 YAML 路徑含 tactic 名（如 `collection/SEN-LNX-004.yml`）；或需重載 plugin | `make test`；`docker compose restart caldera` |
 | Operation 立刻 finished、chain=0 | 使用 ad-hoc 空 profile | 選具名 adversary profile |
 | `cannot create python3` | 多行 sh 被 Caldera 吃掉換行 | 已修正：單行 `;` 分隔 |
 | SEN-LNX-010 失敗 | 003/008/009 未先執行 | 確認 Chain B 順序 |
@@ -311,7 +311,7 @@ python3 scripts/trainingctl.py cleanup
 | 路徑 | 用途 |
 |------|------|
 | `training/scenarios/SEN-APT29-LNX-0*.yaml` | 情境定義 |
-| `caldera-plugin-sensel/data/abilities/sensel-linux/` | Ability YAML |
+| `caldera-plugin-sensel/data/abilities/{discovery,collection,exfiltration}/` | Ability YAML（路徑須含 tactic 名） |
 | `target-linux/scripts/` | marker-writer、staging-manifest、auto-collect、exfil-sim、lateral-plan |
 | `fixtures/wazuh-alerts.ndjson` | 關聯測試資料（Intro/A/B） |
 | `fixtures/wazuh-alerts-chain-c.ndjson` | Chain C 跨主機關聯測試 |
