@@ -1,0 +1,61 @@
+{
+  "operation": {
+    "id": "op-demo-ndr-01",
+    "name": "SEN-NDR-LNX-01",
+    "group": "castle-train-01",
+    "start": "2026-06-22T12:00:00Z",
+    "finish": "2026-06-22T12:08:00Z",
+    "host_group": {
+      "caldera-linux-target-01": {
+        "paw": "demo-paw-01",
+        "platform": "linux"
+      },
+      "caldera-linux-target-02": {
+        "paw": "demo-paw-02",
+        "platform": "linux"
+      }
+    }
+  },
+  "chain": [
+    {
+      "ability_id": "a1b2c3d4-e012-4012-8012-000000000012",
+      "ability_name": "SEN-LNX-012 Remote System Discovery",
+      "paw": "demo-paw-01",
+      "command": "getent hosts",
+      "finish": "2026-06-22T12:01:05Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e013-4013-8013-000000000013",
+      "ability_name": "SEN-LNX-013 Remote Service Discovery",
+      "paw": "demo-paw-01",
+      "command": "ping",
+      "finish": "2026-06-22T12:02:20Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e014-4014-8014-000000000014",
+      "ability_name": "SEN-LNX-014 Simulated Lateral Plan",
+      "paw": "demo-paw-01",
+      "command": "lateral-plan.py",
+      "finish": "2026-06-22T12:03:35Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e017-4017-8017-000000000017",
+      "ability_name": "SEN-LNX-017 Tier2 Synthetic Data Staging",
+      "paw": "demo-paw-02",
+      "command": "cp tier2 staging",
+      "finish": "2026-06-22T12:05:50Z",
+      "status": 0
+    },
+    {
+      "ability_id": "a1b2c3d4-e019-4019-8019-000000000019",
+      "ability_name": "SEN-LNX-019 Tier2 Simulated Exfil Size Check",
+      "paw": "demo-paw-02",
+      "command": "exfil-sim.py tier2",
+      "finish": "2026-06-22T12:07:05Z",
+      "status": 0
+    }
+  ]
+}

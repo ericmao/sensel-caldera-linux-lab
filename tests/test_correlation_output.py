@@ -54,3 +54,36 @@ def test_chain_c_correlation_output(root: Path) -> None:
     assert len(report["correlations"]) == 8
     assert all(item["correlation_status"] == "matched" for item in report["correlations"])
     assert (root / "reports/SEN-APT29-LNX-04-summary.md").exists()
+
+
+def test_ndr_correlation_output(root: Path) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts/trainingctl.py"),
+            "correlate",
+            "--scenario",
+            "SEN-NDR-LNX-01",
+            "--operation-report",
+            str(root / "fixtures/caldera-operation-report.ndr.sample.json"),
+            "--wazuh-alerts",
+            str(root / "fixtures/wazuh-alerts-ndr.ndjson"),
+            "--suricata-alerts",
+            str(root / "fixtures/suricata-alerts-ndr.ndjson"),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+    report = json.loads((root / "reports/SEN-NDR-LNX-01-correlation.json").read_text(encoding="utf-8"))
+    assert report["scenario_id"] == "SEN-NDR-LNX-01"
+    assert len(report["correlations"]) == 5
+    assert all(item["correlation_status"] == "matched" for item in report["correlations"])
+    suricata = report.get("suricata_correlations") or []
+    assert len(suricata) == 5
+    step13 = next(item for item in suricata if item["scenario_id"] == "SEN-LNX-013")
+    assert step13["suricata_correlation_status"] == "matched"
+    assert 9000020 in step13["matched_suricata_sids"]
+    assert (root / "reports/SEN-NDR-LNX-01-summary.md").exists()

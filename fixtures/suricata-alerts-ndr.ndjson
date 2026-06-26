@@ -1,0 +1,7 @@
+{"timestamp":"2026-06-22T12:00:30Z","event_type":"alert","src_ip":"172.30.11.10","dest_ip":"172.31.0.2","proto":"TCP","alert":{"signature_id":9000010,"signature":"SENSEL NDR Caldera HTTP C2 beacon"}}
+{"timestamp":"2026-06-22T12:01:10Z","event_type":"alert","src_ip":"172.30.11.10","dest_ip":"172.31.0.2","proto":"TCP","alert":{"signature_id":9000010,"signature":"SENSEL NDR Caldera HTTP C2 beacon"}}
+{"timestamp":"2026-06-22T12:02:18Z","event_type":"alert","src_ip":"172.30.11.10","dest_ip":"172.30.12.10","proto":"ICMP","alert":{"signature_id":9000020,"signature":"SENSEL NDR ICMP peer probe"}}
+{"timestamp":"2026-06-22T12:02:22Z","event_type":"alert","src_ip":"172.30.11.10","dest_ip":"172.31.0.2","proto":"TCP","alert":{"signature_id":9000010,"signature":"SENSEL NDR Caldera HTTP C2 beacon"}}
+{"timestamp":"2026-06-22T12:03:40Z","event_type":"alert","src_ip":"172.30.11.10","dest_ip":"172.31.0.2","proto":"TCP","alert":{"signature_id":9000010,"signature":"SENSEL NDR Caldera HTTP C2 beacon"}}
+{"timestamp":"2026-06-22T12:05:55Z","event_type":"alert","src_ip":"172.30.12.10","dest_ip":"172.31.0.2","proto":"TCP","alert":{"signature_id":9000012,"signature":"SENSEL NDR Caldera large HTTP upload"}}
+{"timestamp":"2026-06-22T12:07:08Z","event_type":"alert","src_ip":"172.30.12.10","dest_ip":"172.31.0.2","proto":"TCP","alert":{"signature_id":9000012,"signature":"SENSEL NDR Caldera large HTTP upload"}}

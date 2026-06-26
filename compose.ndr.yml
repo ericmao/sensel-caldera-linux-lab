@@ -1,0 +1,112 @@
+# Inline NDR overlay — merge with base compose:
+#   docker compose -f compose.yml -f compose.ndr.yml up -d --build
+#
+# Routes all target <-> caldera and target <-> target traffic through ndr-gateway (Suricata).
+# Portal / production SPAN deploy: see scripts/setup-ndr-edge.sh (sensel-ot-edge-sensor bundle).
+
+services:
+  ndr-gateway:
+    build:
+      context: .
+      dockerfile: ndr/Dockerfile
+    image: sensel-ndr-gateway:latest
+    container_name: ndr-gateway
+    hostname: ndr-gateway
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    environment:
+      NDR_PROFILE: ${NDR_PROFILE:-it_ndr}
+      SENSOR_ID: ${NDR_SENSOR_ID:-caldera-lab-ndr-01}
+    volumes:
+      - ndr_suricata_logs:/var/log/suricata
+    networks:
+      target01_net:
+        ipv4_address: 172.30.11.254
+      target02_net:
+        ipv4_address: 172.30.12.254
+      c2_net:
+        ipv4_address: 172.31.0.254
+    healthcheck:
+      test: ["CMD-SHELL", "pidof suricata >/dev/null && ping -c1 -W2 172.31.0.2"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 25s
+    restart: unless-stopped
+
+  caldera:
+    networks:
+      caldera_lab_net: null
+      c2_net:
+        ipv4_address: 172.31.0.2
+
+  target-linux:
+    cap_add:
+      - NET_ADMIN
+    extra_hosts:
+      - "caldera:172.31.0.2"
+    environment:
+      ENABLE_NDR: "true"
+      NDR_GATEWAY: 172.30.11.254
+      NDR_PEER_CIDR: 172.30.12.0/24
+      NDR_C2_CIDR: 172.31.0.0/24
+    networks:
+      caldera_lab_net: null
+      target01_net:
+        ipv4_address: 172.30.11.10
+    depends_on:
+      ndr-gateway:
+        condition: service_healthy
+      caldera:
+        condition: service_healthy
+
+  target-linux-02:
+    cap_add:
+      - NET_ADMIN
+    extra_hosts:
+      - "caldera:172.31.0.2"
+    environment:
+      ENABLE_NDR: "true"
+      NDR_GATEWAY: 172.30.12.254
+      NDR_PEER_CIDR: 172.30.11.0/24
+      NDR_C2_CIDR: 172.31.0.0/24
+    networks:
+      caldera_lab_net: null
+      target02_net:
+        ipv4_address: 172.30.12.10
+    depends_on:
+      ndr-gateway:
+        condition: service_healthy
+      caldera:
+        condition: service_healthy
+
+networks:
+  caldera_lab_net: null
+  target01_net:
+    name: caldera_target01_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.11.0/24
+          gateway: 172.30.11.1
+  target02_net:
+    name: caldera_target02_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.12.0/24
+          gateway: 172.30.12.1
+  c2_net:
+    name: caldera_c2_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
+          gateway: 172.31.0.1
+
+volumes:
+  ndr_suricata_logs:

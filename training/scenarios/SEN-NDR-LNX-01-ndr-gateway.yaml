@@ -1,0 +1,56 @@
+id: SEN-NDR-LNX-01
+title: APT29-inspired Linux NDR Gateway Training Chain
+adversary_profile: SEN-LNX-Chain-NDR
+group: castle-train-01
+target: caldera-linux-target-01
+targets:
+  - caldera-linux-target-01
+  - caldera-linux-target-02
+tenant_id: castle-train-01
+timeout_minutes: 20
+ndr_profile: it_ndr
+requires_ndr_gateway: true
+abilities:
+  - SEN-LNX-012
+  - SEN-LNX-013
+  - SEN-LNX-014
+  - SEN-LNX-017
+  - SEN-LNX-019
+expected_wazuh_rule_ids:
+  - 100627
+  - 100628
+  - 100629
+  - 100632
+  - 100634
+expected_suricata_sids:
+  SEN-LNX-012:
+    required: []
+    optional: [9000010]
+  SEN-LNX-013:
+    required: [9000020]
+    optional: [9000010]
+  SEN-LNX-014:
+    required: []
+    optional: [9000010]
+  SEN-LNX-017:
+    required: []
+    optional: [9000010, 9000012]
+  SEN-LNX-019:
+    required: []
+    optional: [9000010, 9000012]
+cleanup:
+  - remove /tmp/sensel-discovery-012.txt
+  - remove /tmp/sensel-discovery-013.txt
+  - remove /tmp/sensel-lateral-plan.json
+  - remove /tmp/sensel-training-staging
+  - remove /tmp/sensel-exfil-sim-tier2.json
+prohibited:
+  - credential dumping
+  - persistence
+  - privilege escalation
+  - lateral movement
+  - remote shell to other systems
+  - destructive encryption
+  - payload download
+  - outbound exfiltration
+  - public IP targets

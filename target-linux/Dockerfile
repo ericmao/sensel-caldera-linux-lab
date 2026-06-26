@@ -19,6 +19,7 @@ COPY target-linux/scripts/exfil-sim.py /opt/sensel/scripts/exfil-sim.py
 COPY target-linux/scripts/lateral-plan.py /opt/sensel/scripts/lateral-plan.py
 COPY scripts/bootstrap-sandcat.sh /opt/sensel/scripts/bootstrap-sandcat.sh
 COPY target-linux/scripts/install-wazuh-agent.sh /opt/sensel/scripts/install-wazuh-agent.sh
+COPY target-linux/scripts/setup-ndr-routes.sh /opt/sensel/scripts/setup-ndr-routes.sh
 COPY wazuh/agent/ossec.conf.fragment.xml /opt/sensel/ossec.conf.fragment.xml
 RUN chmod +x /opt/sensel/scripts/*.sh /opt/sensel/scripts/*.py
 

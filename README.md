@@ -257,10 +257,13 @@ Correlation keys: `tenant_id + hostname + scenario_id + time window`. `operation
 | Target | Description |
 |--------|-------------|
 | `make up` | build and start lab |
+| `make up-ndr` | lab + inline Suricata NDR gateway (`compose.ndr.yml`) |
 | `make status` | compose ps + trainingctl status |
+| `make status-ndr` | NDR stack status |
 | `make test` | pytest |
 | `make wazuh-test` | wazuh-logtest against rule fixtures |
 | `make validate` | trainingctl validate + compose config |
+| `make ndr-config` | validate merged NDR compose config |
 | `make hexstrike-mcp` | generate `.cursor/mcp.json` from `.env` (Phase 3) |
 | `make hexstrike-check` | ping Kali + HexStrike `/health` |
 | `make clean` | cleanup staging/sandcat and remove volumes |

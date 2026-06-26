@@ -18,7 +18,9 @@ SCENARIO_FILES = {
     "SEN-APT29-LNX-02": ROOT / "training/scenarios/SEN-APT29-LNX-02-staging-archive.yaml",
     "SEN-APT29-LNX-03": ROOT / "training/scenarios/SEN-APT29-LNX-03-collection-exfil-sim.yaml",
     "SEN-APT29-LNX-04": ROOT / "training/scenarios/SEN-APT29-LNX-04-simulated-lateral.yaml",
+    "SEN-NDR-LNX-01": ROOT / "training/scenarios/SEN-NDR-LNX-01-ndr-gateway.yaml",
 }
+COMPOSE_NDR_FILES = ["-f", "compose.yml", "-f", "compose.ndr.yml"]
 DEFAULT_SCENARIO = "SEN-APT29-LNX-01"
 ALLOWED_ABILITIES = {f"SEN-LNX-{idx:03d}" for idx in range(1, 20)}
 ALLOWED_TARGETS = {
@@ -66,7 +68,19 @@ def validate_scenario(scenario: dict) -> list[str]:
     if len(expected_rules) != len(abilities):
         errors.append("expected_wazuh_rule_ids must match abilities count")
 
+    suricata_map = scenario.get("expected_suricata_sids") or {}
+    if suricata_map:
+        for ability in abilities:
+            if ability not in suricata_map:
+                errors.append(f"expected_suricata_sids missing entry for {ability}")
+
     return errors
+
+
+def compose_base_args(use_ndr: bool = False) -> list[str]:
+    if use_ndr or os.environ.get("ENABLE_NDR", "").lower() in ("1", "true", "yes"):
+        return COMPOSE_NDR_FILES
+    return []
 
 
 def report_paths(scenario_id: str) -> tuple[Path, Path]:
@@ -75,10 +89,11 @@ def report_paths(scenario_id: str) -> tuple[Path, Path]:
     return report_json, report_md
 
 
-def run_compose(args: list[str], check: bool = True) -> subprocess.CompletedProcess:
+def run_compose(args: list[str], check: bool = True, use_ndr: bool = False) -> subprocess.CompletedProcess:
     env = os.environ.copy()
+    base = compose_base_args(use_ndr=use_ndr)
     return subprocess.run(
-        ["docker", "compose", *args],
+        ["docker", "compose", *base, *args],
         cwd=ROOT,
         env=env,
         check=check,
@@ -107,18 +122,18 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_up(_: argparse.Namespace) -> int:
-    run_compose(["up", "-d", "--build"])
+def cmd_up(args: argparse.Namespace) -> int:
+    run_compose(["up", "-d", "--build"], use_ndr=args.ndr)
     return 0
 
 
-def cmd_down(_: argparse.Namespace) -> int:
-    run_compose(["down"])
+def cmd_down(args: argparse.Namespace) -> int:
+    run_compose(["down"], use_ndr=args.ndr)
     return 0
 
 
-def cmd_status(_: argparse.Namespace) -> int:
-    result = run_compose(["ps"], check=False)
+def cmd_status(args: argparse.Namespace) -> int:
+    result = run_compose(["ps"], check=False, use_ndr=args.ndr)
     if result.stdout:
         print(result.stdout)
     if result.stderr:
@@ -141,9 +156,22 @@ def cmd_deploy_agent(_: argparse.Namespace) -> int:
     return rc
 
 
+def fixture_paths_for_scenario(scenario_id: str) -> tuple[str, str, str | None]:
+    if scenario_id == "SEN-NDR-LNX-01":
+        return (
+            "fixtures/wazuh-alerts-ndr.ndjson",
+            "fixtures/suricata-alerts-ndr.ndjson",
+            "fixtures/caldera-operation-report.ndr.sample.json",
+        )
+    if scenario_id == "SEN-APT29-LNX-04":
+        return ("fixtures/wazuh-alerts-chain-c.ndjson", None, None)
+    return ("fixtures/wazuh-alerts.ndjson", None, None)
+
+
 def cmd_run_manual(args: argparse.Namespace) -> int:
     scenario = load_scenario(args.scenario)
     profile = scenario.get("adversary_profile") or scenario["title"]
+    wazuh_fixture, suricata_fixture, _ = fixture_paths_for_scenario(scenario["id"])
     steps = [
         "Manual Caldera UI operation steps (instructor-led)",
         "========================================",
@@ -184,15 +212,21 @@ def cmd_run_manual(args: argparse.Namespace) -> int:
             "   python3 scripts/trainingctl.py correlate \\",
             f"     --scenario {scenario['id']} \\",
             "     --operation-report /path/to/operation-report.json \\",
-            (
-                "     --wazuh-alerts fixtures/wazuh-alerts-chain-c.ndjson"
-                if scenario["id"] == "SEN-APT29-LNX-04"
-                else "     --wazuh-alerts fixtures/wazuh-alerts.ndjson"
+            f"     --wazuh-alerts {wazuh_fixture}"
+            + (
+                f" \\\n     --suricata-alerts {suricata_fixture}"
+                if suricata_fixture
+                else ""
             ),
             "",
-            "Note: this command does NOT invoke Caldera APIs automatically.",
         ]
     )
+    if scenario.get("requires_ndr_gateway"):
+        steps.insert(
+            4,
+            "0. Start lab with inline NDR: make up-ndr  (or: trainingctl up --ndr)",
+        )
+    steps.append("Note: this command does NOT invoke Caldera APIs automatically.")
     print("\n".join(steps))
     return 0
 
@@ -213,8 +247,13 @@ def cmd_correlate(args: argparse.Namespace) -> int:
     from correlate import build_summary, correlate, load_ndjson
 
     scenario_id = args.scenario
+    scenario = load_scenario(scenario_id)
     operation_report = json.loads(Path(args.operation_report).read_text(encoding="utf-8"))
     wazuh_alerts = load_ndjson(Path(args.wazuh_alerts))
+    suricata_alerts = None
+    suricata_expectations = scenario.get("expected_suricata_sids")
+    if args.suricata_alerts:
+        suricata_alerts = load_ndjson(Path(args.suricata_alerts))
     tenant_id = args.tenant_id or ALLOWED_TENANT
     hostname = args.hostname or ALLOWED_TARGET
     window = int(args.time_window or os.environ.get("CORRELATION_TIME_WINDOW_SEC", "300"))
@@ -226,6 +265,8 @@ def cmd_correlate(args: argparse.Namespace) -> int:
         hostname,
         window,
         scenario_id=scenario_id,
+        suricata_alerts=suricata_alerts,
+        suricata_expectations=suricata_expectations,
     )
     report_json, report_md = report_paths(scenario_id)
     report_json.parent.mkdir(parents=True, exist_ok=True)
@@ -236,7 +277,7 @@ def cmd_correlate(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_cleanup(_: argparse.Namespace) -> int:
+def cmd_cleanup(args: argparse.Namespace) -> int:
     for service in TARGET_SERVICES:
         run_compose(
             [
@@ -248,6 +289,7 @@ def cmd_cleanup(_: argparse.Namespace) -> int:
                 CLEANUP_CMD,
             ],
             check=False,
+            use_ndr=args.ndr,
         )
     print("Cleanup completed on all targets (artifacts cleared, sandcat stopped; marker logs preserved)")
     return 0
@@ -264,9 +306,15 @@ def build_parser() -> argparse.ArgumentParser:
         default="all",
     )
 
-    sub.add_parser("up")
-    sub.add_parser("down")
-    sub.add_parser("status")
+    up = sub.add_parser("up")
+    up.add_argument("--ndr", action="store_true", help="Use compose.ndr.yml overlay")
+
+    down = sub.add_parser("down")
+    down.add_argument("--ndr", action="store_true")
+
+    status = sub.add_parser("status")
+    status.add_argument("--ndr", action="store_true")
+
     sub.add_parser("deploy-agent")
 
     run_manual = sub.add_parser("run-manual")
@@ -283,11 +331,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(ROOT / "fixtures/caldera-operation-report.sample.json"),
     )
     corr.add_argument("--wazuh-alerts", default=str(ROOT / "fixtures/wazuh-alerts.ndjson"))
+    corr.add_argument("--suricata-alerts", default=None)
     corr.add_argument("--tenant-id", default=ALLOWED_TENANT)
     corr.add_argument("--hostname", default=ALLOWED_TARGET)
     corr.add_argument("--time-window", default=None)
 
-    sub.add_parser("cleanup")
+    cleanup = sub.add_parser("cleanup")
+    cleanup.add_argument("--ndr", action="store_true")
     return parser
 
 

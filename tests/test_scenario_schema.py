@@ -8,6 +8,7 @@ SCENARIO_FILES = [
     "SEN-APT29-LNX-02-staging-archive.yaml",
     "SEN-APT29-LNX-03-collection-exfil-sim.yaml",
     "SEN-APT29-LNX-04-simulated-lateral.yaml",
+    "SEN-NDR-LNX-01-ndr-gateway.yaml",
 ]
 
 SCENARIO_EXPECTATIONS = {
@@ -15,6 +16,7 @@ SCENARIO_EXPECTATIONS = {
     "SEN-APT29-LNX-02": {"abilities": 6, "min_abilities": 6},
     "SEN-APT29-LNX-03": {"abilities": 6, "min_abilities": 6},
     "SEN-APT29-LNX-04": {"abilities": 8, "min_abilities": 8},
+    "SEN-NDR-LNX-01": {"abilities": 5, "min_abilities": 5},
 }
 
 

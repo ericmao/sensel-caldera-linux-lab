@@ -1,0 +1,10 @@
+# SenseL Caldera Linux Lab — training NDR rules (it_ndr profile extension)
+# SID block 9000010+ reserved for localhost Docker lab correlation.
+
+alert http $HOME_NET any -> any 8888 (msg:"SENSEL NDR Caldera HTTP C2 beacon"; flow:established,to_server; http.uri; content:"/beacon"; nocase; classtype:command-and-control; sid:9000010; rev:1;)
+
+alert http $HOME_NET any -> any 8888 (msg:"SENSEL NDR Caldera agent download"; flow:to_server; http.method; content:"POST"; http.uri; content:"/file/download"; classtype:policy-violation; sid:9000011; rev:1;)
+
+alert http $HOME_NET any -> any 8888 (msg:"SENSEL NDR Caldera large HTTP upload"; flow:established,to_server; http.uri; content:"/beacon"; nocase; dsize:>400; classtype:command-and-control; sid:9000012; rev:1;)
+
+alert icmp $HOME_NET any -> $HOME_NET any (msg:"SENSEL NDR ICMP peer probe"; itype:8; icode:0; classtype:attempted-recon; sid:9000020; rev:1;)
