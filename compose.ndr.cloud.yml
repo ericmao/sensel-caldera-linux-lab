@@ -1,0 +1,140 @@
+# Cloud NDR overlay — inline ndr-gateway + SenseL edge stack (Edge Console :8090).
+#   make up-ndr-cloud
+#
+# Merges with compose.yml + compose.ndr.yml. Requires vendor/sensel-ot-edge-sensor
+# (scripts/ensure-edge-sensor.sh). packet-sensor tails ndr-gateway eve.json for northbound upload.
+
+services:
+  ndr-gateway:
+    volumes:
+      - ndr_suricata_logs:/var/log/suricata
+
+  local-mqtt:
+    image: eclipse-mosquitto:2
+    container_name: sensel-local-mqtt
+    restart: unless-stopped
+    volumes:
+      - ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}/services/mqtt-broker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      - sensel_edge
+
+  sensel-edge-agent:
+    build:
+      context: ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}/services/sensel-edge-agent
+      dockerfile: Dockerfile
+    image: sensel-edge-agent:caldera-lab
+    container_name: sensel-edge-agent
+    restart: unless-stopped
+    environment:
+      DEPLOY_TARGET: ubuntu
+      SENSEL_API_URL: ${SENSEL_API_URL:-https://academy.avocadolab.ai}
+      SENSEL_API_KEY: ${SENSEL_API_KEY:-}
+      SENSEL_VERIFY_TLS: ${SENSEL_VERIFY_TLS:-true}
+      NORTHBOUND_MQTT_ENABLED: ${NORTHBOUND_MQTT_ENABLED:-true}
+      CONTROL_PLANE_MQTT_HOST: ${CONTROL_PLANE_MQTT_HOST:-mqtt.avocadolab.ai}
+      CONTROL_PLANE_MQTT_PORT: ${CONTROL_PLANE_MQTT_PORT:-1833}
+      MQTT_TENANT_ID: ${MQTT_TENANT_ID:-default}
+      PLATFORM_CONFIG_PATH: /app/data/platform.json
+      POLICY_SYNC_ENABLED: ${POLICY_SYNC_ENABLED:-true}
+      POLICY_SYNC_TENANT_ID: ${POLICY_SYNC_TENANT_ID:-${MQTT_TENANT_ID:-default}}
+      POLICY_SYNC_INTERVAL_SEC: ${POLICY_SYNC_INTERVAL_SEC:-60}
+      SIGHTING_REPORT_ENABLED: ${SIGHTING_REPORT_ENABLED:-true}
+      IOC_MATCH_ENABLED: ${IOC_MATCH_ENABLED:-true}
+      NDR_PROFILE: ${NDR_PROFILE:-it_ndr}
+      IDS_RULE_FEED_PROFILE: ${IDS_RULE_FEED_PROFILE:-it_ndr}
+      IDS_RULE_ENABLED: "false"
+      SURICATA_SOURCE_ENABLED: ${SURICATA_SOURCE_ENABLED:-true}
+      SURICATA_SIGHTING_ENABLED: ${SURICATA_SIGHTING_ENABLED:-false}
+      DISK_ALERT_THRESHOLD_PCT: ${DISK_ALERT_THRESHOLD_PCT:-85}
+    volumes:
+      - ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}/config:/app/config:ro
+      - ./ndr-cloud/data/agent:/app/data
+      - ./ndr-cloud/data/assets:/app/data/assets:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sensel_edge
+    depends_on:
+      local-mqtt:
+        condition: service_started
+      ndr-gateway:
+        condition: service_healthy
+
+  packet-sensor:
+    build:
+      context: ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}/services/packet-sensor
+      dockerfile: Dockerfile
+    image: sensel-packet-sensor:caldera-lab
+    container_name: sensel-packet-sensor
+    restart: unless-stopped
+    env_file:
+      - ./ndr-cloud/data/agent/capture.env
+    environment:
+      DEPLOY_TARGET: ubuntu
+      LOCAL_MQTT_HOST: local-mqtt
+      LOCAL_MQTT_PORT: "1883"
+      CAPTURE_INTERFACE: lo
+      CAPTURE_BPF_FILTER: ""
+      PCAP_MAX_DISK_MB: ${PCAP_MAX_DISK_MB:-256}
+      PCAP_RETENTION_MINUTES: ${PCAP_RETENTION_MINUTES:-30}
+      CAPTURE_MAX_MBPS: ${CAPTURE_MAX_MBPS:-10}
+      SURICATA_SOURCE_ENABLED: "true"
+      SURICATA_EVE_JSON_PATH: /app/data/suricata/eve.json
+      SURICATA_SOURCE_POLL_SEC: ${SURICATA_SOURCE_POLL_SEC:-2}
+      IOC_MATCH_ENABLED: ${IOC_MATCH_ENABLED:-true}
+    volumes:
+      - ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}/config:/app/config:ro
+      - ndr_suricata_logs:/app/data/suricata:ro
+      - ./ndr-cloud/data/pcap:/app/data/pcap
+      - ./ndr-cloud/data/assets:/app/data/assets
+      - ./ndr-cloud/data/agent:/app/data/agent:ro
+    networks:
+      - sensel_edge
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      local-mqtt:
+        condition: service_started
+      sensel-edge-agent:
+        condition: service_started
+      ndr-gateway:
+        condition: service_healthy
+
+  edge-console:
+    build:
+      context: ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}/services/edge-console
+      dockerfile: Dockerfile
+    image: sensel-edge-console:caldera-lab
+    container_name: sensel-edge-console
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8090"
+      - "127.0.0.1:8443:8443"
+    environment:
+      PLATFORM_CONFIG_PATH: /data/agent/platform.json
+      ASSETS_DIR: /data/assets
+      CONSOLE_TLS_HOSTS: ${CONSOLE_TLS_HOSTS:-sensel.local,localhost,127.0.0.1}
+      DEFAULT_SENSEL_API_KEY: ${SENSEL_API_KEY:-}
+      EDGE_CONSOLE_PASSWORD: ${EDGE_CONSOLE_PASSWORD:-}
+      EDGE_CONSOLE_DOCKER_RESTART: ${EDGE_CONSOLE_DOCKER_RESTART:-true}
+      EDGE_CONSOLE_AUTO_RESTART_AGENT: ${EDGE_CONSOLE_AUTO_RESTART_AGENT:-true}
+      EDGE_CONSOLE_NET_ADMIN: ${EDGE_CONSOLE_NET_ADMIN:-true}
+      NDR_PROFILE: ${NDR_PROFILE:-it_ndr}
+      EDGE_AGENT_CONTAINER: sensel-edge-agent
+      PACKET_SENSOR_CONTAINER: sensel-packet-sensor
+      DISK_ALERT_THRESHOLD_PCT: ${DISK_ALERT_THRESHOLD_PCT:-85}
+    volumes:
+      - ./ndr-cloud/data/agent:/data/agent
+      - ./ndr-cloud/data/assets:/data/assets
+      - ${SENSEL_OT_EDGE_DIR:-./vendor/sensel-ot-edge-sensor}:/project:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sensel_edge
+    depends_on:
+      local-mqtt:
+        condition: service_started
+
+networks:
+  sensel_edge:
+    name: caldera_sensel_edge
+    driver: bridge

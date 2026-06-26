@@ -6,10 +6,21 @@ Suricata-based inline router for the Caldera training lab. Aligns with SenseL **
 ## Docker lab (localhost)
 
 ```bash
-make up-ndr          # compose.yml + compose.ndr.yml
+make up-ndr          # compose.yml + compose.ndr.yml (local Suricata only)
+make up-ndr-cloud    # + Edge Console :8090 + cloud agent (Portal invite code)
 make status-ndr
+make status-ndr-cloud
 python3 scripts/trainingctl.py run-manual --scenario SEN-NDR-LNX-01
 ```
+
+### Cloud registration (make up-ndr-cloud)
+
+1. Copy Portal bundle `.env` to `ndr/portal.env` (gitignored) or fill cloud vars in `.env`
+2. `make up-ndr-cloud` — clones `vendor/sensel-ot-edge-sensor` on first run
+3. Open **http://127.0.0.1:8090** → Setup wizard → paste Portal **invite code**
+4. Verify sensor appears in Portal (MQTT northbound)
+
+Inline traffic still flows through `ndr-gateway`; `packet-sensor` tails shared `eve.json`.
 
 Topology:
 

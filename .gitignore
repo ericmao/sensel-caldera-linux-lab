@@ -1,5 +1,7 @@
 .env
 ndr/portal.env
+vendor/
+ndr-cloud/data/
 .cursor/mcp.json
 secrets/
 *.pyc
