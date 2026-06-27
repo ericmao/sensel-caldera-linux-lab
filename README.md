@@ -1,313 +1,356 @@
 # sensel-caldera-linux-lab
 
-Minimal SenseL / Caldera Linux training lab using two Docker containers on localhost.
+SenseL 安全訓練實驗室：在 **localhost Docker** 上運行 [MITRE Caldera](https://github.com/mitre/caldera) 5.3.0，搭配可選 **Wazuh EDR**、**Suricata NDR**，以及 **SenseL Control Plane** 雲端報到。
 
-**Training Guide 2.0:** [training/TRAINING-GUIDE-2.0.md](training/TRAINING-GUIDE-2.0.md) — four scenarios, nineteen safe abilities, Chain C dual-target simulated lateral.
+**Training Guide 2.1：** [training/TRAINING-GUIDE-2.1.md](training/TRAINING-GUIDE-2.1.md)（PDF：[training/pdf/README.md](training/pdf/README.md)）  
+**Training Guide 2.0（舊版）：** [training/TRAINING-GUIDE-2.0.md](training/TRAINING-GUIDE-2.0.md)
 
-## Architecture
+| 平台 | 快速開始 |
+|------|----------|
+| **macOS / Linux** | `make up` → `make up-ndr` → `make up-ndr-cloud` |
+| **Windows** | [docs/WINDOWS-DEPLOY.md](docs/WINDOWS-DEPLOY.md) — `.\scripts\windows\lab.ps1 up-ndr-cloud` |
+| **Ubuntu VM（SPAN 正式 NDR）** | Portal bundle + [scripts/setup-ndr-edge.sh](scripts/setup-ndr-edge.sh) |
+
+---
+
+## 這個 repo 做什麼？
+
+| 層級 | 元件 | 用途 |
+|------|------|------|
+| **攻擊模擬** | Caldera + Sandcat | 19 個安全 Linux 能力（SEN-LNX-001..019） |
+| **主機偵測 (EDR)** | Wazuh Agent → Manager | Phase 2：ability 與規則 1:1（100610–100634） |
+| **網路偵測 (NDR)** | Suricata + SenseL Edge | C2 beacon、ICMP 探測、橫向流量等 |
+| **關聯分析** | `trainingctl correlate` | Caldera × Wazuh × Suricata 三層對照 |
+
+所有演練在 **localhost / 隔離 Docker 網路** 內進行，不含真實外洩、提權 exploit 或橫向 pivot。
+
+---
+
+## SenseL OT NDR vs IT NDR
+
+兩者皆基於上游 [sensel-ot-edge-sensor](https://github.com/AvocadoAI-Lab/sensel-ot-edge-sensor)（Suricata / packet-sensor / edge-agent）。差異在 **部署場景** 與 **profile**：
+
+| | **OT NDR** | **IT NDR**（本 lab 預設） |
+|---|-----------|--------------------------|
+| **典型環境** | 工控 / OT 網段、OpenWrt、SPAN mirror | 企業 IT、Ubuntu 感測器、VMware/實體 SPAN |
+| **Profile** | `ot_ids` | `it_ndr` |
+| **Portal bundle** | OT Edge 下載包 | `sensel-it-ndr-company-*` |
+| **流量來源** | 實體 mirror（GOOSE/MMS/Modbus 等） | SPAN/TAP + HTTP/C2/ICMP 等 IT 規則 |
+| **本 repo** | 可經 Portal 在 Ubuntu 部署 | **內建** inline 規則 SID 9000010–9000020 |
+
+產品級 OT/IT 部署細節見 edge repo 的 [README](https://github.com/AvocadoAI-Lab/sensel-ot-edge-sensor) 與 `docs/deployment-*.md`。
+
+---
+
+## 部署模式：該選哪一種？
+
+```mermaid
+flowchart TB
+  subgraph docker [Docker 版 — 模擬與訓練 macOS / Windows / Linux]
+    D1["make up / lab.ps1 up\nCaldera + 2 targets"]
+    D2["make up-ndr\n+ inline Suricata"]
+    D3["make up-ndr-cloud\n+ Edge Console :8090\n+ Portal MQTT"]
+  end
+  subgraph ubuntu [Ubuntu VM 版 — 生產 SPAN]
+    U1["Portal bundle install.sh"]
+    U2["SPAN mirror → Suricata host capture"]
+    U3["Edge Console :8090 正式上線"]
+  end
+  docker --> SIM["Caldera 模擬\n雲端 Control Plane smoke test"]
+  ubuntu --> PROD["真實 mirror 流量\n長期感測器"]
+```
+
+### Docker 版（**推薦：Caldera 模擬與教學**）
+
+| 模式 | 指令（Mac/Linux） | Windows |
+|------|-------------------|---------|
+| 基礎 lab | `make up` | `.\scripts\windows\lab.ps1 up` |
+| 本機 NDR | `make up-ndr` | `.\scripts\windows\lab.ps1 up-ndr` |
+| NDR + 雲端 | `make up-ndr-cloud` | `.\scripts\windows\lab.ps1 up-ndr-cloud` |
+
+**適合：**
+
+- **Caldera 攻擊模擬**：target 流量經 `ndr-gateway` inline 轉發
+- **macOS / Windows Docker Desktop**：本機教學、pytest、關聯報告
+- **雲端整合測試**：http://127.0.0.1:8090 貼 Portal invite code
+
+**限制：** 非 SPAN 被動抓包；Desktop 版僅 smoke test，非正式 NDR 感測器。
+
+> Windows 詳細步驟：[docs/WINDOWS-DEPLOY.md](docs/WINDOWS-DEPLOY.md)（需 Docker Desktop **Linux containers** + Git Bash）
+
+### Ubuntu VM 版（**推薦：正式 SPAN NDR**）
+
+```bash
+# Ubuntu 22.04 / 24.04
+python3 -m zipfile -e sensel-it-ndr-*.zip sensel-deploy
+cd sensel-deploy && chmod +x install.sh
+# 編輯 .env：SENSOR_ID、OT_REGISTRATION_TOKEN
+./install.sh
+# Edge Console: http://<vm-ip>:8090
+```
+
+或從本 repo：
+
+```bash
+cp /path/to/portal-bundle/.env ndr/portal.env
+SENSEL_NDR_BUNDLE_DIR=/path/to/portal-bundle bash scripts/setup-ndr-edge.sh
+```
+
+NDR 技術細節：[ndr/README.md](ndr/README.md)
+
+---
+
+## 架構
+
+### 基礎 lab
 
 ```mermaid
 flowchart LR
-  subgraph host [DockerHost]
-    UI["Caldera Web UI\n127.0.0.1:8888"]
+  subgraph host [Docker Host]
+    UI["Caldera UI\n127.0.0.1:8888"]
   end
   subgraph net [caldera_lab_net]
-    C["caldera container\n:8888 internal"]
-    T["target_linux container\nSandcat + JSON marker"]
-    T2["target_linux_02 container\nSandcat + JSON marker"]
+    C[caldera]
+    T[target-linux]
+    T2[target-linux-02]
   end
-  subgraph remote [Phase2_External]
-    WM["Wazuh Manager\nenv specified"]
-  end
-  subgraph phase3 [Phase3_Optional]
-    K["Kali VM\nHexStrike :8888"]
-    MCP["Cursor MCP client"]
+  subgraph ext [External]
+    WM[Wazuh Manager]
   end
   UI --> C
-  T -->|"http://caldera:8888"| C
-  T2 -->|"http://caldera:8888"| C
-  T -.->|"1514/1515 Phase 2"| WM
-  MCP -->|"HTTP LAN"| K
-  K -.->|"authorized scans"| host
+  T --> C
+  T2 --> C
+  T -.-> WM
 ```
 
-### Network and port design
+### NDR inline lab（`up-ndr` / `up-ndr-cloud`）
 
-| Component | Exposure | Notes |
-|-----------|----------|-------|
-| `caldera` | `127.0.0.1:8888` on host | UI/C2 HTTP only on localhost |
-| `target-linux` | none | reaches Caldera via Docker DNS `caldera:8888` |
-| `target-linux-02` | none | Chain C tier-2 file server; same network |
-| `caldera_lab_net` | bridge | isolated lab network |
-| Wazuh Manager | external | configured via `.env`, not deployed here |
+```mermaid
+flowchart TB
+  T1["target-linux\n172.30.11.10"] --> NDR["ndr-gateway Suricata"]
+  T2["target-linux-02\n172.30.12.10"] --> NDR
+  NDR --> C2["caldera 172.31.0.2"]
+  subgraph cloud [up-ndr-cloud only]
+    PS[packet-sensor]
+    EA[edge-agent]
+    EC["Edge Console\n127.0.0.1:8090"]
+    CP[SenseL Control Plane]
+    NDR -->|eve.json| PS --> EA --> CP
+    EC --> EA
+  end
+```
 
-Security constraints enforced:
+### 網路與埠口
 
-- no `privileged` mode
-- no Docker socket mount
-- no host root filesystem mount
-- no `network_mode: host` on target
-- no ngrok / cloudflared / public tunnel
+| 元件 | 暴露 | 說明 |
+|------|------|------|
+| `caldera` | `127.0.0.1:8888` | UI / C2（僅 localhost） |
+| `edge-console` | `127.0.0.1:8090` | NDR Setup / invite code（`up-ndr-cloud`） |
+| `target-linux` / `02` | 無 | 經 NDR 閘道路由 |
+| Wazuh Manager | 外部 | `.env` 指定 |
 
-## Prerequisites
+**安全約束：** target 無 `privileged`、無 Docker socket、無 host network；edge 的 docker.sock 僅限 NDR 管理元件。
 
-- Docker Engine / Docker Desktop
-- Python 3.10+ (for `trainingctl` and pytest)
-- ~4 GB free disk for Caldera image build
+---
 
 ## Quick start
 
+### macOS / Linux
+
 ```bash
-cd ~/caldera_pentest/sensel-caldera-linux-lab
+git clone https://github.com/ericmao/sensel-caldera-linux-lab.git
+cd sensel-caldera-linux-lab
 cp .env.example .env
-make validate
-make up
-make status
+make validate && make up && make status
 ```
 
-Open Caldera UI: http://127.0.0.1:8888 (default login `red` / `admin` unless changed).
+### Windows
 
-## Environment variables
+```powershell
+git clone https://github.com/ericmao/sensel-caldera-linux-lab.git
+cd sensel-caldera-linux-lab
+copy .env.example .env
+.\scripts\windows\lab.ps1 validate
+.\scripts\windows\lab.ps1 up-ndr-cloud
+```
 
-See [`.env.example`](.env.example).
+Caldera UI：http://127.0.0.1:8888（預設 `red` / `admin`）
 
-Key values:
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `CALDERA_REF` | `5.3.0` | Caldera git tag/branch |
-| `TENANT_ID` | `castle-train-01` | training tenant |
-| `TARGET_AGENT_NAME` | `caldera-linux-target-01` | primary target hostname |
-| `TARGET_AGENT_NAME_02` | `caldera-linux-target-02` | Chain C tier-2 target hostname |
-| `SANDCAT_GROUP` | `castle-train-01` | Sandcat group |
-| `ENABLE_WAZUH` | `false` | Phase 1 skips Wazuh agent |
-| `ENABLE_HEXSTRIKE` | `false` | Phase 3 flag (MCP + Kali, optional) |
-| `HEXSTRIKE_SERVER_URL` | `http://192.168.1.110:8888` | Kali HexStrike server |
-| `SANDCAT_DEPLOY_COMMAND` | empty | optional UI command override |
-
-## Sandcat deployment mechanism
-
-**Primary (automated):** header-based `POST /file/download` per Caldera v5.3.0 Sandcat docs:
-
-- `file: sandcat.go`
-- `platform: linux`
-- `server: http://caldera:8888`
-- `group: castle-train-01`
-
-Implemented in [`scripts/bootstrap-sandcat.sh`](scripts/bootstrap-sandcat.sh).
-
-**Fallback (manual):** copy Linux deploy command from Caldera UI into `.env`:
+### NDR 訓練（需先 `up-ndr` 或 `up-ndr-cloud`）
 
 ```bash
-bash scripts/print-sandcat-deploy-command.sh
-# paste into SANDCAT_DEPLOY_COMMAND=
-docker compose restart target-linux
+python3 scripts/trainingctl.py run-manual --scenario SEN-NDR-LNX-01
+docker exec ndr-gateway tail -f /var/log/suricata/eve.json
 ```
 
-Reason: `/api/v2/deploy_commands` requires authenticated UI session and embeds dynamic `app.contact.http`; header-based `/file/download` is stable inside the lab network.
+雲端註冊：複製 Portal `.env` → `ndr/portal.env` → `make up-ndr-cloud` → http://127.0.0.1:8090
 
-Reference: [Caldera 5.3.0 Sandcat Details](https://caldera.readthedocs.io/en/5.3.0/plugins/sandcat/Sandcat-Details.html)
+---
 
-## Wazuh agent enrollment (Phase 2)
+## 訓練場景
 
-Phase 1 runs without Wazuh agent. Enable later with `ENABLE_WAZUH=true`.
+| Scenario ID | Profile | 步數 | 重點 |
+|-------------|---------|------|------|
+| `SEN-APT29-LNX-01` | `SEN-LNX-Chain-Intro` | 4 | 探索 + staging 入門 |
+| `SEN-APT29-LNX-02` | `SEN-LNX-Chain-A` | 6 | 探索 → staging → tar |
+| `SEN-APT29-LNX-03` | `SEN-LNX-Chain-B` | 6 | 身分探索 → 模擬 exfil |
+| `SEN-APT29-LNX-04` | `SEN-LNX-Chain-C` | 8 | 雙 target 模擬橫向 |
+| `SEN-NDR-LNX-01` | `SEN-LNX-Chain-NDR` | 5 | NDR gateway 能力鏈 |
 
-### A. Agent key mount
+### SEN-NDR-LNX-01 與 Suricata SID
 
-1. Obtain pre-shared agent key from soc-sensel Wazuh Manager.
-2. Save as `./secrets/client.keys`
-3. Set in `.env`:
+| SID | 觸發 |
+|-----|------|
+| 9000010 | Caldera C2 `/beacon`（背景） |
+| 9000011 | Sandcat `POST /file/download` |
+| 9000012 | 大型 C2 HTTP 上傳 |
+| 9000020 | ICMP 探測（SEN-LNX-013 專屬） |
 
-```bash
-ENABLE_WAZUH=true
-WAZUH_ENROLLMENT_MODE=key_mount
-WAZUH_MANAGER_HOST=<manager-host>
-```
-
-Difference: manager already knows the agent ID/key; no enrollment port call.
-
-### B. Auto enrollment service
-
-```bash
-ENABLE_WAZUH=true
-WAZUH_ENROLLMENT_MODE=auto_enroll
-WAZUH_MANAGER_HOST=<manager-host>
-WAZUH_ENROLLMENT_HOST=<enrollment-host>
-WAZUH_ENROLLMENT_PORT=1515
-```
-
-Difference: agent calls `agent-auth` against enrollment service; manager must allow agent registration.
-
-## HexStrike MCP + Kali (Phase 3)
-
-Optional third stage: Cursor drives **HexStrike AI** on a Kali VM (`192.168.1.110` by default) while Phase 1/2 Docker lab keeps running on localhost.
-
-Full guide: [docs/PHASE3-HEXSTRIKE.md](docs/PHASE3-HEXSTRIKE.md).
-
-```bash
-# 1. On Kali: install and start hexstrike_server.py (see docs/PHASE3-HEXSTRIKE.md)
-# 2. On Mac: set HEXSTRIKE_* in .env, then:
-make hexstrike-mcp      # writes .cursor/mcp.json (gitignored)
-make hexstrike-check    # ping + /health
-# 3. Reload Cursor → Settings → MCP → hexstrike-ai connected
-```
-
-Split-host model: **tool server on Kali**, **MCP client in Cursor on Mac**. Caldera stays on `127.0.0.1:8888`; HexStrike on Kali uses LAN `:8888` — no port clash.
-
-## Caldera UI workflow
-
-Full instructor steps: [training/TRAINING-GUIDE-2.0.md](training/TRAINING-GUIDE-2.0.md).
-
-```bash
-# Intro scenario (4 abilities)
-python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-01
-
-# Chain A — discovery, staging, archive (6 abilities)
-python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-02
-
-# Chain B — auto-collect, simulated exfil prep (6 abilities)
-python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-03
-
-# Chain C — dual-target simulated lateral (8 abilities, select BOTH agents)
-python3 scripts/trainingctl.py run-manual --scenario SEN-APT29-LNX-04
-```
-
-Summary:
-
-1. Create adversary profile (`SEN-LNX-Chain-Intro`, `SEN-LNX-Chain-A`, `SEN-LNX-Chain-B`, or `SEN-LNX-Chain-C`)
-2. Add abilities **in order** — do **not** use empty ad-hoc profile
-3. Select Sandcat agent(s) (`castle-train-01`; Chain C requires **both** targets)
-4. Start operation with Autonomous ON
-5. Export operation report JSON
-6. Correlate with Wazuh alerts
-
-## Training scenarios (v2.0)
-
-| Scenario ID | Profile name | Steps | Focus |
-|-------------|--------------|-------|-------|
-| `SEN-APT29-LNX-01` | `SEN-LNX-Chain-Intro` | 4 | Discovery + staging intro |
-| `SEN-APT29-LNX-02` | `SEN-LNX-Chain-A` | 6 | Discovery → staging → tar archive |
-| `SEN-APT29-LNX-03` | `SEN-LNX-Chain-B` | 6 | Identity/service discovery → auto-collect → simulated exfil size |
-| `SEN-APT29-LNX-04` | `SEN-LNX-Chain-C` | 8 | Dual-target simulated lateral → tier-2 staging → archive → sim exfil |
-
-## Safe Linux abilities
-
-| ID | ATT&CK | Tactic | Expected Wazuh rule |
-|----|--------|--------|---------------------|
-| SEN-LNX-001 | T1087.001 | Discovery | 100610 |
-| SEN-LNX-002 | T1016 | Discovery | 100611 |
-| SEN-LNX-003 | T1057 | Discovery | 100612 |
-| SEN-LNX-004 | T1074.001 | Collection | 100613 |
-| SEN-LNX-005 | T1082 | Discovery | 100614 |
-| SEN-LNX-006 | T1083 | Discovery | 100615 |
-| SEN-LNX-007 | T1560.001 | Collection | 100616 |
-| SEN-LNX-008 | T1033 | Discovery | 100617 |
-| SEN-LNX-009 | T1007 | Discovery | 100618 |
-| SEN-LNX-010 | T1119 | Collection | 100619 |
-| SEN-LNX-011 | T1030 | Exfiltration (simulated) | 100620 |
-| SEN-LNX-012 | T1018 | Discovery | 100627 |
-| SEN-LNX-013 | T1046 | Discovery | 100628 |
-| SEN-LNX-014 | T1018 | Discovery (simulated lateral plan) | 100629 |
-| SEN-LNX-015 | T1082 | Discovery | 100630 |
-| SEN-LNX-016 | T1083 | Discovery | 100631 |
-| SEN-LNX-017 | T1074.001 | Collection | 100632 |
-| SEN-LNX-018 | T1560.001 | Collection | 100633 |
-| SEN-LNX-019 | T1030 | Exfiltration (simulated) | 100634 |
-
-SEN-LNX-011 and SEN-LNX-019 perform **local byte counting only** — no network exfiltration. Chain C uses **simulated lateral planning** — no SSH pivot or remote execution.
-
-Markers written to `/var/log/sensel-training/caldera-events.json` on target-linux.
-
-## Wazuh rule deployment (soc-sensel Manager)
-
-1. Copy [`wazuh/manager/local_rules.xml`](wazuh/manager/local_rules.xml) to manager `etc/rules/` (or merge into existing custom rules).
-2. Restart Wazuh manager analysis service.
-3. Validate with test events:
-
-```bash
-make wazuh-test
-```
-
-If `wazuh-logtest` is unavailable locally, use pytest fixtures:
-
-```bash
-make test
-```
-
-**Important:** fixture tests passing does **not** prove live Wazuh ingestion on your manager.
-
-## Layer C correlation example
+三層關聯：
 
 ```bash
 python3 scripts/trainingctl.py correlate \
-  --scenario SEN-APT29-LNX-01 \
-  --operation-report fixtures/caldera-operation-report.sample.json \
-  --wazuh-alerts fixtures/wazuh-alerts.ndjson
+  --scenario SEN-NDR-LNX-01 \
+  --operation-report /path/to/operation-report.json \
+  --wazuh-alerts fixtures/wazuh-alerts-ndr.ndjson \
+  --suricata-alerts fixtures/suricata-alerts-ndr.ndjson
 ```
 
-Output (per scenario):
+---
 
-- `reports/SEN-APT29-LNX-01-correlation.json`
-- `reports/SEN-APT29-LNX-01-summary.md`
+## 環境變數
 
-Correlation keys: `tenant_id + hostname + scenario_id + time window`. `operation_id` is added by backend correlation, not by abilities.
+完整列表：[`.env.example`](.env.example)
 
-## Makefile targets
+| 變數 | 預設 | 用途 |
+|------|------|------|
+| `CALDERA_REF` | `5.3.0` | Caldera 版本 |
+| `TENANT_ID` | `castle-train-01` | 訓練 tenant |
+| `ENABLE_WAZUH` | `false` | Phase 2 Wazuh |
+| `NDR_PROFILE` | `it_ndr` | NDR profile |
+| `NDR_SENSOR_ID` | `caldera-lab-ndr-01` | 本機 inline NDR ID |
+| `SENSOR_ID` | — | Portal sensor ID（cloud） |
+| `MQTT_TENANT_ID` | — | enterprise / tenant |
+| `OT_REGISTRATION_TOKEN` | — | Portal invite code |
+| `SENSEL_NDR_BUNDLE_DIR` | — | Ubuntu Portal bundle 路徑 |
 
-| Target | Description |
-|--------|-------------|
-| `make up` | build and start lab |
-| `make up-ndr` | lab + inline Suricata NDR gateway (`compose.ndr.yml`) |
-| `make up-ndr-cloud` | NDR gateway + Edge Console `:8090` + cloud agent (Portal invite) |
-| `make status` | compose ps + trainingctl status |
-| `make status-ndr` | NDR stack status |
-| `make status-ndr-cloud` | NDR cloud stack status |
-| `make test` | pytest |
-| `make wazuh-test` | wazuh-logtest against rule fixtures |
-| `make validate` | trainingctl validate + compose config |
-| `make ndr-config` | validate merged NDR compose config |
-| `make ndr-cloud-config` | validate merged NDR cloud compose config |
-| `make down-ndr-cloud` | stop NDR cloud stack |
-| `make hexstrike-mcp` | generate `.cursor/mcp.json` from `.env` (Phase 3) |
-| `make hexstrike-check` | ping Kali + HexStrike `/health` |
-| `make clean` | cleanup staging/sandcat and remove volumes |
+---
 
-## Cleanup and troubleshooting
+## Sandcat 部署
+
+Primary：`POST /file/download`（header-based），見 [`scripts/bootstrap-sandcat.sh`](scripts/bootstrap-sandcat.sh)。
+
+Fallback：Caldera UI deploy command → `SANDCAT_DEPLOY_COMMAND` in `.env`。
+
+Reference: [Caldera 5.3.0 Sandcat](https://caldera.readthedocs.io/en/5.3.0/plugins/sandcat/Sandcat-Details.html)
+
+---
+
+## Wazuh（Phase 2）
+
+Phase 1 預設關閉。啟用 `ENABLE_WAZUH=true` + `WAZUH_ENROLLMENT_MODE`（`key_mount` 或 `auto_enroll`）。
+
+規則：[`wazuh/manager/local_rules.xml`](wazuh/manager/local_rules.xml) → soc-sensel Manager。
+
+```bash
+make wazuh-test
+make test
+```
+
+---
+
+## HexStrike MCP + Kali（Phase 3，可選）
+
+[docs/PHASE3-HEXSTRIKE.md](docs/PHASE3-HEXSTRIKE.md)
+
+```bash
+make hexstrike-mcp
+make hexstrike-check
+```
+
+---
+
+## Caldera UI 工作流程
+
+詳見 [training/TRAINING-GUIDE-2.1.md](training/TRAINING-GUIDE-2.1.md)。
+
+1. 建立 adversary profile（依場景）
+2. 依序加入 abilities
+3. 選擇 Sandcat agent（Chain C 需兩台 target）
+4. Autonomous ON 啟動 operation
+5. 匯出 operation report → correlate
+
+---
+
+## Safe Linux abilities（摘要）
+
+19 個能力 SEN-LNX-001..019，對應 Wazuh 100610–100634。SEN-LNX-011 / 019 僅本機 byte 計數；Chain C 為**模擬**橫向規劃，無 SSH pivot。
+
+Markers：`/var/log/sensel-training/caldera-events.json`
+
+完整 ATT&CK 對照見 [Training Guide 2.1](training/TRAINING-GUIDE-2.1.md)。
+
+---
+
+## Makefile / PowerShell 指令
+
+| Make（Mac/Linux） | Windows PowerShell |
+|-------------------|---------------------|
+| `make up` | `.\scripts\windows\lab.ps1 up` |
+| `make up-ndr` | `.\scripts\windows\lab.ps1 up-ndr` |
+| `make up-ndr-cloud` | `.\scripts\windows\lab.ps1 up-ndr-cloud` |
+| `make down-ndr-cloud` | `.\scripts\windows\lab.ps1 down-ndr-cloud` |
+| `make status-ndr-cloud` | `.\scripts\windows\lab.ps1 status-ndr-cloud` |
+| `make test` | `.\scripts\windows\lab.ps1 test` |
+| `make clean` | `.\scripts\windows\lab.ps1 clean` |
+
+其他：`make validate`、`make ndr-config`、`make ndr-cloud-config`、`make hexstrike-*`
+
+---
+
+## 專案目錄
+
+```
+caldera/                  Caldera server image
+target-linux/             Target 容器（Sandcat + marker）
+caldera-plugin-sensel/    SEN-LNX-001..019 能力
+ndr/                      Suricata 規則、portal.env 模板
+compose.ndr.yml           inline NDR overlay
+compose.ndr.cloud.yml     NDR + edge-agent + Console
+scripts/windows/          Windows PowerShell 部署腳本
+wazuh/                    Agent + Manager 規則
+training/                 場景 YAML + TRAINING-GUIDE-2.1.md + pdf/
+docs/                     WINDOWS-DEPLOY.md, PHASE3-HEXSTRIKE.md
+tests/                    pytest
+vendor/                   sensel-ot-edge-sensor（gitignore，首次 cloud 部署 clone）
+```
+
+---
+
+## 限制與疑難排解
+
+| 項目 | 說明 |
+|------|------|
+| Docker target | 無完整 auditd；以 marker + Wazuh/NDR 補足 |
+| Docker NDR | inline 路由模擬，非 SPAN |
+| Windows | 需 Linux containers + Git Bash；見 [WINDOWS-DEPLOY.md](docs/WINDOWS-DEPLOY.md) |
+| Portal 無 sensor | 需 `up-ndr-cloud` + :8090 invite；`up-ndr` 不連雲 |
 
 ```bash
 python3 scripts/trainingctl.py cleanup
-make down
+make down          # 或 lab.ps1 down-ndr-cloud
 ```
 
-| Issue | Check |
-|-------|-------|
-| Sandcat not appearing | `docker compose logs target-linux`; verify `curl http://caldera:8888/api/v2/health` from target |
-| Caldera slow start | first run builds UI/agents; wait for healthcheck |
-| Abilities missing | ensure `sensel` plugin loaded; restart caldera |
-| Wazuh rules not firing | confirm manager has `local_rules.xml`; agent not running in Phase 1 |
+| 問題 | 檢查 |
+|------|------|
+| Sandcat 未上線 | `docker compose logs target-linux` |
+| NDR 無告警 | `make status-ndr`；`ndr-gateway` healthy |
+| 8090 無法開啟 | 確認 `up-ndr-cloud` 且 `sensel-edge-console` running |
 
-## Limitations
+---
 
-In a non-privileged Docker container, full native process/audit telemetry is not guaranteed. This lab validates the chain using:
+## 授權與上游
 
-- Caldera command results
-- JSON training markers
-- Wazuh JSON log + FIM ingestion (Phase 2)
-- HexStrike MCP on Kali for AI-assisted recon against authorized lab targets (Phase 3)
-
-For native Linux auditd / Sysmon-like process telemetry, use a VM or dedicated sensor.
-
-## Project layout
-
-```
-caldera/                  Caldera server image build
-target-linux/             Target container (Sandcat + marker writer)
-caldera-plugin-sensel/    Eleven safe Linux abilities (SEN-LNX-001..011)
-wazuh/                    Agent fragment + manager rules + test events
-training/                 Scenario definitions + TRAINING-GUIDE-2.0.md
-scripts/                  trainingctl, bootstrap, correlation, hexstrike MCP
-scripts/kali/             Kali-side HexStrike server setup (Phase 3)
-docs/                     PHASE3-HEXSTRIKE.md
-tests/                    pytest suite
-fixtures/                 sample alerts and operation report
-```
+- [MITRE Caldera](https://github.com/mitre/caldera) — 依 upstream 授權
+- [sensel-ot-edge-sensor](https://github.com/AvocadoAI-Lab/sensel-ot-edge-sensor) — Apache 2.0
+- Suricata — `jasonish/suricata` 映像

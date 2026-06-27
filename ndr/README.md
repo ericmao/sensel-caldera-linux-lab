@@ -13,6 +13,8 @@ make status-ndr-cloud
 python3 scripts/trainingctl.py run-manual --scenario SEN-NDR-LNX-01
 ```
 
+**Windows:** `.\scripts\windows\lab.ps1 up-ndr-cloud` — see [docs/WINDOWS-DEPLOY.md](../docs/WINDOWS-DEPLOY.md).
+
 ### Cloud registration (make up-ndr-cloud)
 
 1. Copy Portal bundle `.env` to `ndr/portal.env` (gitignored) or fill cloud vars in `.env`

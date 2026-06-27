@@ -1,5 +1,8 @@
 # SenseL Caldera Linux Lab — 教學指南 2.0
 
+> **已更新至 [教學指南 2.1](TRAINING-GUIDE-2.1.md)**（NDR、Docker Mac/Windows、Chain C、三層關聯）。  
+> PDF 來源：[`training/pdf/README.md`](pdf/README.md)
+
 本文件說明 **Training Lab 2.0**：在原有 4 步 Discovery/Collection 基礎上，新增 **兩條 6 步攻擊鏈**，延伸至 ATT&CK 後段 **Collection / Archive / Simulated Exfil Prep**。
 
 ---

@@ -29,3 +29,20 @@ def test_makefile_has_ndr_cloud_targets(root: Path) -> None:
 def test_bootstrap_scripts_exist(root: Path) -> None:
     assert (root / "scripts/ensure-edge-sensor.sh").is_file()
     assert (root / "scripts/bootstrap-ndr-cloud.sh").is_file()
+
+
+def test_windows_deploy_assets_exist(root: Path) -> None:
+    assert (root / "docs/WINDOWS-DEPLOY.md").is_file()
+    assert (root / "scripts/windows/lab.ps1").is_file()
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    assert "WINDOWS-DEPLOY.md" in readme
+    assert "lab.ps1" in readme
+
+
+def test_training_guide_21_exists(root: Path) -> None:
+    guide = root / "training/TRAINING-GUIDE-2.1.md"
+    assert guide.is_file()
+    text = guide.read_text(encoding="utf-8")
+    assert "SEN-NDR-LNX-01" in text
+    assert "make up-ndr-cloud" in text
+    assert (root / "training/pdf/README.md").is_file()

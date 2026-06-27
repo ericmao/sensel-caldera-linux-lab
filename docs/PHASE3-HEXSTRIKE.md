@@ -151,5 +151,5 @@ Suggested instructor flow after Phase 1 scenarios and (optional) Phase 2 Wazuh c
 ## References
 
 - [HexStrike AI GitHub](https://github.com/0x4m4/hexstrike-ai)
-- [Caldera Training Guide 2.0](../training/TRAINING-GUIDE-2.0.md)
+- [Caldera Training Guide 2.1](../training/TRAINING-GUIDE-2.1.md)
 - Cursor MCP: project file `.cursor/mcp.json` (generated from `.cursor/mcp.json.example`)
