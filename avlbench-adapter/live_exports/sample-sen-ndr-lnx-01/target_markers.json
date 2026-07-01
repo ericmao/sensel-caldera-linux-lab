@@ -1,0 +1,14 @@
+[
+  {
+    "marker_id": "sen-lnx-012",
+    "path": "/var/log/sensel-training/caldera-events.json",
+    "run_id": "sample-sen-ndr-lnx-01",
+    "simulated": true
+  },
+  {
+    "marker_id": "sen-lnx-013",
+    "path": "/var/log/sensel-training/caldera-events.json",
+    "run_id": "sample-sen-ndr-lnx-01",
+    "simulated": true
+  }
+]

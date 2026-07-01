@@ -1,0 +1,2 @@
+{"event_type": "alert", "signature_id": 9000020, "src_ip": "172.30.11.10", "dest_ip": "172.31.0.2", "proto": "TCP", "run_id": "sample-sen-ndr-lnx-01", "simulated": true}
+{"event_type": "alert", "signature_id": 9000010, "src_ip": "172.30.11.10", "dest_ip": "172.31.0.2", "proto": "TCP", "run_id": "sample-sen-ndr-lnx-01", "simulated": true}

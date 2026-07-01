@@ -1,0 +1,9 @@
+[
+  {
+    "ability_id": "SEN-LNX-001",
+    "status": 0,
+    "host": "target-linux",
+    "operation": "sample-op-001",
+    "simulated": true
+  }
+]

@@ -1,0 +1,42 @@
+# Sample ExternalLabRef — copy into ValidationContract.external_lab_ref in control plane
+lab_id: sensel-caldera-linux-lab
+local_path: /Users/ericmao/caldera_pentest/sensel-caldera-linux-lab
+adapter_type: caldera_linux_lab
+enabled: false
+
+allowed_networks:
+  - caldera_lab_net
+  - caldera_ndr_net
+  - 172.30.11.0/24
+  - 172.30.12.0/24
+  - 172.31.0.0/24
+
+allowed_targets:
+  - target-linux
+  - target-linux-02
+  - caldera-localhost
+
+supported_evidence_planes:
+  - wazuh_events
+  - ndr_events
+  - caldera_operation_events
+  - target_markers
+  - asset_context
+
+supported_template_families:
+  - COLLECT_EVIDENCE
+  - EMULATE_POST_ACCESS
+  - RESET
+
+safety_constraints:
+  - localhost_docker_only
+  - no_docker_socket
+  - no_host_network
+  - no_privileged_targets
+  - no_public_tunnel
+  - no_arbitrary_shell
+  - typed_templates_only
+
+phase0_note: |
+  enabled must remain false until Controlled Lab Runner adapter is implemented.
+  See docs/AVL_RUNNER_ADAPTER_CONTRACT.md

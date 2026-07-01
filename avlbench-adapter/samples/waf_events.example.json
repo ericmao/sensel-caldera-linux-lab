@@ -1,0 +1,59 @@
+[
+  {
+    "event_id": "waf-example-s1-block",
+    "scenario_id": "health-avlbench-web-rce-01",
+    "timestamp": "2026-06-30T12:00:01Z",
+    "source_ip": "172.30.11.10",
+    "target_host": "health-avlbench-web-lab-01",
+    "request_method": "POST",
+    "request_path": "/api/marker",
+    "normalized_headers": {
+      "content-type": "application/json"
+    },
+    "matched_rule_id": "VP-WEB-RCE-001",
+    "matched_rule_source": "custom_virtual_patch",
+    "action": "block",
+    "anomaly_score": 10.0,
+    "policy_version": "phase1c-vp-placeholder",
+    "evidence_status": "blocked",
+    "scenario_control_state": "S1",
+    "benign": false,
+    "raw_ref": "example:sensel-caldera-linux-lab/avlbench-adapter/samples/waf_events.example.json"
+  },
+  {
+    "event_id": "waf-example-s0-log",
+    "scenario_id": "health-avlbench-web-rce-01",
+    "timestamp": "2026-06-30T12:00:02Z",
+    "source_ip": "172.30.11.10",
+    "target_host": "health-avlbench-web-lab-01",
+    "request_method": "POST",
+    "request_path": "/api/marker",
+    "matched_rule_id": "942100",
+    "matched_rule_source": "owasp_crs",
+    "action": "log",
+    "anomaly_score": 5.0,
+    "policy_version": "phase0-default",
+    "evidence_status": "logged_only",
+    "scenario_control_state": "S0",
+    "benign": false,
+    "raw_ref": "example:sensel-caldera-linux-lab/avlbench-adapter/samples/waf_events.example.json"
+  },
+  {
+    "event_id": "waf-example-s2-overblock",
+    "scenario_id": "health-avlbench-web-rce-01",
+    "timestamp": "2026-06-30T12:00:03Z",
+    "source_ip": "172.30.11.10",
+    "target_host": "health-avlbench-web-lab-01",
+    "request_method": "GET",
+    "request_path": "/health",
+    "matched_rule_id": "VP-WEB-RCE-001",
+    "matched_rule_source": "custom_virtual_patch",
+    "action": "block",
+    "anomaly_score": 0.0,
+    "policy_version": "phase1c-vp-placeholder",
+    "evidence_status": "blocked",
+    "scenario_control_state": "S2",
+    "benign": true,
+    "raw_ref": "example:sensel-caldera-linux-lab/avlbench-adapter/samples/waf_events.example.json"
+  }
+]

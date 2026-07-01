@@ -1,0 +1,128 @@
+# AVL Manual Live Smoke Test — Phase 2B
+phase: 2B
+lab_id: sensel-caldera-linux-lab
+execution: manual_operator_only
+
+description: |
+  Operator-triggered live smoke test for one safe Caldera training scenario.
+  Requires explicit environment flags and manual CLI invocation.
+  No autonomous agent or API auto-execution.
+
+template_aliases:
+  caldera_linux_safe_ttp: caldera-safe-ttp-v1
+
+allowlisted_templates:
+  - caldera_linux_safe_ttp
+  - caldera-safe-ttp-v1
+
+allowlisted_training_scenarios:
+  - id: SEN-NDR-LNX-01
+    yaml: training/scenarios/SEN-NDR-LNX-01-ndr-gateway.yaml
+    default_target: target-linux
+    default_network: caldera_ndr_net
+    compose_profile: make up-ndr
+  - id: SEN-APT29-LNX-01
+    yaml: training/scenarios/SEN-APT29-LNX-01-safe-discovery.yaml
+    default_target: target-linux
+    default_network: caldera_lab_net
+    compose_profile: make up
+
+allowlisted_targets:
+  - target-linux
+  - target-linux-02
+  - caldera-localhost
+
+allowlisted_networks:
+  - caldera_lab_net
+  - caldera_ndr_net
+
+required_env:
+  live_enabled: AVL_LAB_RUNNER_LIVE_ENABLED=true
+  manual_confirm: AVL_LAB_RUNNER_MANUAL_CONFIRM=I_UNDERSTAND_THIS_RUNS_LOCAL_LAB
+
+forbidden_request_flags:
+  - use_public_tunnel
+  - use_host_network
+  - use_docker_socket
+  - arbitrary_command
+
+allowlisted_manual_steps:
+  - verify_lab_stack_health
+  - confirm_token_and_contract
+  - start_compose_profile
+  - run_caldera_scenario_via_ui
+  - wait_for_operation_complete
+  - export_caldera_operation_report
+  - export_target_markers
+  - export_wazuh_alerts
+  - export_suricata_eve
+  - optional_export_waf_fixture
+  - import_evidence_to_avlbench
+  - run_reset_template
+
+manual_steps:
+  - step_id: verify_lab_stack_health
+    description: "Operator verifies localhost Docker lab stack is healthy (no tunnel, no host network)."
+    operator_action: "cd <lab_root> && make status"
+  - step_id: confirm_token_and_contract
+    description: "Confirm AVL contract verified, approved, and capability token issued."
+    operator_action: "Review preflight_check_result from ManualLiveRunner.build_plan()"
+  - step_id: start_compose_profile
+    description: "Start allowlisted compose profile for the training scenario."
+    operator_action: "cd <lab_root> && <compose_profile>"
+  - step_id: run_caldera_scenario_via_ui
+    description: "Run allowlisted Caldera safe ability chain via Caldera UI (127.0.0.1:8888)."
+    operator_action: "Launch adversary profile for <training_scenario_id> against allowlisted target"
+  - step_id: wait_for_operation_complete
+    description: "Wait for Caldera operation to finish; do not run arbitrary commands."
+    operator_action: "Monitor operation status in Caldera UI until complete"
+  - step_id: export_caldera_operation_report
+    description: "Export Caldera operation report JSON to live export directory."
+    operator_action: "Save to avlbench-adapter/live_exports/<run_id>/caldera_operation_events.json"
+  - step_id: export_target_markers
+    description: "Copy target markers NDJSON from /var/log/sensel-training/caldera-events.json"
+    operator_action: "Save to avlbench-adapter/live_exports/<run_id>/target_markers.json"
+  - step_id: export_wazuh_alerts
+    description: "Export Wazuh alerts for the operation window."
+    operator_action: "Save to avlbench-adapter/live_exports/<run_id>/wazuh_events.json"
+  - step_id: export_suricata_eve
+    description: "Export Suricata eve.json alerts for the operation window."
+    operator_action: "Save to avlbench-adapter/live_exports/<run_id>/ndr_events.json"
+  - step_id: optional_export_waf_fixture
+    description: "Optional WAF fixture if web WAF scenario present."
+    operator_action: "Save to avlbench-adapter/live_exports/<run_id>/waf_events.json"
+  - step_id: import_evidence_to_avlbench
+    description: "Import read-only live exports into EvidenceBundle + ArtifactPack."
+    operator_action: "ManualLiveRunner.import_post_run_evidence(export_dir=...)"
+  - step_id: run_reset_template
+    description: "Run documented reset template after evidence import."
+    operator_action: "Execute reset-lab-v1 cleanup per training guide"
+
+expected_artifacts:
+  - filename: caldera_operation_events.json
+    plane: caldera_operation_events
+    required: true
+  - filename: target_markers.json
+    plane: target_markers
+    required: true
+  - filename: wazuh_events.json
+    plane: wazuh_events
+    required: true
+  - filename: ndr_events.json
+    plane: ndr_events
+    required: true
+  - filename: waf_events.json
+    plane: waf_events
+    required: false
+
+live_export_subdir: avlbench-adapter/live_exports
+allowed_import_roots:
+  - avlbench-adapter/live_exports
+  - avlbench-adapter/samples
+
+safety:
+  no_public_tunnel: true
+  no_docker_socket: true
+  no_host_network: true
+  no_arbitrary_shell: true
+  api_auto_execution: false

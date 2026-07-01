@@ -1,0 +1,90 @@
+# sensel-caldera-linux-lab capabilities — AVL Phase 0 metadata
+lab_id: sensel-caldera-linux-lab
+adapter_type: caldera_linux_lab
+phase: 0
+execution: disabled
+
+caldera:
+  version: "5.3.0"
+  ui: "127.0.0.1:8888"
+  safe_abilities: "SEN-LNX-001..019"
+  ability_chains:
+    - SEN-LNX-Chain-Intro
+    - SEN-LNX-Chain-A
+    - SEN-LNX-Chain-B
+    - SEN-LNX-Chain-C
+    - SEN-LNX-Chain-NDR
+
+targets:
+  - id: target-linux
+    network: caldera_lab_net
+    ndr_ip: "172.30.11.10"
+  - id: target-linux-02
+    network: caldera_lab_net
+    ndr_ip: "172.30.12.10"
+
+wazuh:
+  phase: 2
+  rule_range: "100610-100634"
+  mapping: "1:1 ability to rule"
+
+ndr:
+  engine: suricata
+  profile: it_ndr
+  sid_range: "9000010-9000020"
+  eve_path: "/var/log/suricata/eve.json"
+  modes:
+    - make up-ndr
+    - make up-ndr-cloud
+
+correlation:
+  tool: trainingctl correlate
+  planes:
+    - caldera
+    - wazuh
+    - suricata
+
+reports:
+  - caldera_operation_report_json
+  - correlate_markdown
+  - correlate_json
+
+fixtures:
+  - wazuh_alerts_export
+  - suricata_eve_fixture
+
+waf:
+  present: false
+  note: "WAF evidence absent unless web WAF scenario added later"
+
+compose_profiles:
+  - make up
+  - make up-ndr
+  - make up-ndr-cloud
+
+safety_constraints:
+  - localhost_docker_only
+  - no_docker_socket
+  - no_host_network
+  - no_privileged_targets
+  - no_public_tunnel
+  - no_arbitrary_shell
+  - typed_templates_only
+
+future_adapter_requests:
+  allowed:
+    - prepare_lab
+    - run_safe_template
+    - collect_report
+    - collect_markers
+    - collect_wazuh_fixture
+    - collect_suricata_fixture
+    - reset_lab
+  forbidden:
+    - arbitrary_shell
+    - new_exploit
+    - production_target
+    - public_tunnel
+    - docker_socket
+    - host_network
+    - destructive_operation

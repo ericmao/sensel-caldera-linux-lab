@@ -1,0 +1,29 @@
+# Read-only fixture reference mapping for B0 Golden Path
+# Source lab: sensel-caldera-linux-lab (no execution from this repo in Phase 1A)
+
+reference_control_plane_fixtures: guacamole-ai/avlbench/artifacts/samples/health-avlbench-web-rce-01-b0
+
+lab_artifact_references:
+  - lab_source: training/TRAINING-GUIDE-2.1.md
+    notes: Caldera × Wazuh × Suricata correlation patterns
+
+  - lab_source: avlbench-adapter/evidence_mapping.yaml
+    maps_to: control_plane EvidenceBundle planes
+
+  - lab_source: /var/log/sensel-training/caldera-events.json
+    avl_plane: target_markers
+    mode: read_only_reference
+
+  - lab_source: ndr-gateway /var/log/suricata/eve.json
+    avl_plane: ndr_events
+    sid_range: "9000010-9000020"
+    mode: read_only_reference
+
+  - lab_source: wazuh alerts export
+    avl_plane: wazuh_events
+    rule_range: "100610-100634"
+    mode: read_only_reference
+
+waf:
+  present: false
+  notes: WAF evidence absent in caldera lab unless web WAF scenario added later

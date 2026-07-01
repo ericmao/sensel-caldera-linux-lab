@@ -1,0 +1,9 @@
+[
+  {
+    "rule_id": "100610",
+    "level": 10,
+    "description": "SenseL training marker — discovery",
+    "agent_name": "target-linux",
+    "simulated": true
+  }
+]

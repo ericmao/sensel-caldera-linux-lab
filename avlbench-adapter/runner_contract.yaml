@@ -1,0 +1,93 @@
+# AVL Controlled Lab Runner — adapter contract (Phase 2A)
+contract_version: "2A"
+lab_id: sensel-caldera-linux-lab
+adapter_type: caldera_linux_lab
+execution: dry_run_default
+
+description: |
+  Typed-template boundary between guacamole-ai AVLBench and sensel-caldera-linux-lab.
+  Phase 2A — scaffold only; live execution disabled unless AVL_LAB_RUNNER_LIVE_ENABLED=true.
+
+supported_methods:
+  prepare:
+    side_effects: false
+    requires_token: true
+  execute_template:
+    side_effects: false
+    requires_token: true
+    dry_run_default: true
+  collect_evidence:
+    side_effects: false
+    requires_token: true
+    mode: fixture_import
+  reset:
+    side_effects: false
+    requires_token: true
+    audit_only: true
+  teardown:
+    side_effects: false
+    requires_token: true
+    audit_only: true
+
+request_schema:
+  required:
+    - run_id
+    - scenario_id
+    - template_id
+    - target_id
+    - allowed_network
+    - capability_token
+  optional:
+    - expected_evidence
+    - reset_required
+    - dry_run
+
+safe_templates_dir: avlbench-adapter/safe_templates
+fixtures_dir: avlbench-adapter/samples
+
+allowlisted_templates:
+  - caldera-safe-ttp-v1
+  - reset-lab-v1
+  - prepare-lab-v1
+
+forbidden_request_flags:
+  - use_public_tunnel
+  - use_host_network
+  - use_docker_socket
+
+safety_constraints:
+  - localhost_docker_only
+  - no_docker_socket
+  - no_host_network
+  - no_privileged_targets
+  - no_public_tunnel
+  - no_arbitrary_shell
+  - typed_templates_only
+
+live_execution:
+  env_var: AVL_LAB_RUNNER_LIVE_ENABLED
+  default: false
+  note: "Phase 2A rejects live execution even when enabled — not implemented"
+
+audit_event_fields:
+  - audit_event_id
+  - run_id
+  - action
+  - template_id
+  - target_id
+  - allowed
+  - denied_reasons
+  - token_subject
+  - timestamp
+  - dry_run
+  - no_side_effects
+
+control_plane:
+  repo: guacamole-ai
+  client: sensel_control_plane/services/avl/lab_runner_client.py
+  routes:
+    - POST /api/v1/avl/runner/prepare
+    - POST /api/v1/avl/runner/execute
+    - POST /api/v1/avl/runner/collect-evidence
+    - POST /api/v1/avl/runner/reset
+    - POST /api/v1/avl/runner/teardown

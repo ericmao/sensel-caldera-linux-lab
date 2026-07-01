@@ -1,0 +1,24 @@
+run_id: sample-sen-ndr-lnx-01
+scenario_id: caldera-linux-safe-ttp-01
+template_id: caldera_linux_safe_ttp
+training_scenario: SEN-NDR-LNX-01
+target_id: target-linux
+network_id: caldera_ndr_net
+exported_at: "2026-06-30T12:00:00Z"
+exported_by: operator-rehearsal
+source_repo: sensel-caldera-linux-lab
+source_commit: null
+files:
+  caldera_operation_report: caldera_operation_report.json
+  target_markers: target_markers.json
+  wazuh_alerts: wazuh_alerts.ndjson
+  suricata_alerts: suricata_alerts.ndjson
+notes: |
+  Phase 2C sample live export for AVLBench import rehearsal.
+  Simulated operator artifacts — not from a live Caldera run in CI.
+safety_attestation:
+  no_public_tunnel: true
+  no_host_network: true
+  no_docker_socket_to_agent: true
+  no_destructive_payload: true
+  local_lab_only: true

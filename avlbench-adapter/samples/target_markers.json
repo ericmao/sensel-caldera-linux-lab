@@ -1,0 +1,7 @@
+[
+  {
+    "marker_id": "sen-lnx-001",
+    "path": "/var/log/sensel-training/caldera-events.json",
+    "simulated": true
+  }
+]

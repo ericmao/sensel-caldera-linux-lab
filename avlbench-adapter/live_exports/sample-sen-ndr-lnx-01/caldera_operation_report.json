@@ -1,0 +1,18 @@
+[
+  {
+    "ability_id": "SEN-LNX-012",
+    "status": 0,
+    "host": "target-linux",
+    "operation": "sample-sen-ndr-lnx-01",
+    "run_id": "sample-sen-ndr-lnx-01",
+    "simulated": true
+  },
+  {
+    "ability_id": "SEN-LNX-013",
+    "status": 0,
+    "host": "target-linux",
+    "operation": "sample-sen-ndr-lnx-01",
+    "run_id": "sample-sen-ndr-lnx-01",
+    "simulated": true
+  }
+]

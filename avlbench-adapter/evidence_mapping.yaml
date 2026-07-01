@@ -1,0 +1,55 @@
+# Evidence mapping: sensel-caldera-linux-lab → AVL EvidenceBundle planes
+lab_id: sensel-caldera-linux-lab
+
+mappings:
+  - lab_artifact: caldera_operation_report
+    lab_path_pattern: "operation-report.json"
+    avl_plane: caldera_operation_events
+    collector: collect_report
+    notes: "Caldera UI export or API operation report JSON"
+
+  - lab_artifact: target_markers
+    lab_path: "/var/log/sensel-training/caldera-events.json"
+    avl_plane: target_markers
+    collector: collect_markers
+    format: ndjson
+    notes: "Structured JSON markers written by marker-writer abilities"
+
+  - lab_artifact: wazuh_alerts
+    lab_path_pattern: "wazuh-alerts.json"
+    avl_plane: wazuh_events
+    collector: collect_wazuh_fixture
+    notes: "Fixture export or live Wazuh Manager query; rules 100610-100634"
+
+  - lab_artifact: suricata_eve
+    lab_path: "/var/log/suricata/eve.json"
+    avl_plane: ndr_events
+    collector: collect_suricata_fixture
+    notes: "ndr-gateway eve.json; SID 9000010-9000020 for lab traffic"
+
+  - lab_artifact: waf_events
+    avl_plane: waf_events
+    present: false
+    notes: "Absent in this lab unless web WAF scenario added later"
+
+  - lab_artifact: asset_context
+    avl_plane: asset_context
+    source: "target-linux / target-linux-02 agent metadata"
+    notes: "Hostname, paw, chain context from Caldera report"
+
+  - lab_artifact: policy_context
+    avl_plane: policy_context
+    source: "control plane policy_version at collection time"
+    notes: "Bound by capability token in future phases"
+
+detection_gap_rules:
+  - if_events_without_rule: mark detection_gap
+  - never_count_as_defensive_success: true
+
+correlation:
+  tool: trainingctl correlate
+  inputs:
+    - caldera_operation_report
+    - wazuh_alerts
+    - suricata_eve
+  output: correlate_report_json

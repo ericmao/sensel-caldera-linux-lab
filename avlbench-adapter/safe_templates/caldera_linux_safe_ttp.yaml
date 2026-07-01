@@ -1,0 +1,41 @@
+# caldera_linux_safe_ttp — lab-side safe template mirror (Phase 2A)
+template_id: caldera-safe-ttp-v1
+lab_id: sensel-caldera-linux-lab
+scenario_id: caldera-linux-safe-ttp-01
+phase: 2A
+execution: disabled
+
+description: |
+  Safe Caldera Linux TTP chain (SEN-LNX-001..019 only).
+  Runner adapter metadata — no ability or compose changes in Phase 2A.
+
+ability_chain_ref: SEN-LNX-Chain-Intro
+safe_abilities:
+  - SEN-LNX-001
+  - SEN-LNX-002
+  - SEN-LNX-003
+
+targets:
+  - target-linux
+  - target-linux-02
+
+networks:
+  - caldera_lab_net
+  - caldera_ndr_net
+
+expected_markers_path: /var/log/sensel-training/caldera-events.json
+expected_wazuh_rules: "100610-100634"
+expected_ndr_sids: "9000010-9000020"
+
+reset_template: reset-lab-v1
+dry_run_default: true
+
+forbidden:
+  - arbitrary_shell
+  - persistence
+  - destructive_file_operation
+  - public_tunnel
+  - docker_socket
+  - host_network
+
+control_plane_template: avlbench/lab-runner/templates/caldera_linux_safe_ttp.yaml
